@@ -8,6 +8,31 @@ import (
 	"testing"
 )
 
+func ExampleBlock() {
+	src := []byte(`package x
+
+// X stores info
+type X struct {
+}
+func NewX() *X { return &X{} }
+
+// not much here
+
+func play() {
+_ = "hey"
+}`)
+
+	index := Index(src)
+	b := &Block{src: src[index[2]:index[3]]}
+	fmt.Println(b.IsConstructor("X"))
+	b = &Block{src: src[index[0]:index[1]]}
+	fmt.Println(b.IsType("X"))
+
+	// output:
+	// true
+	// true
+}
+
 func Example_Index() {
 	src := []byte(`package x
 

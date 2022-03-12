@@ -3,7 +3,35 @@ package gosort
 import (
 	"go/scanner"
 	"go/token"
+	"io"
 )
+
+type Block struct {
+	src []byte
+}
+
+func (me *Block) WriteTo(w io.Writer) {
+	w.Write(me.src)
+}
+
+func (me *Block) IsConstructor(typeName string) bool {
+	c := FindConstructors(me.src, typeName)
+	return len(c) > 0
+}
+
+func (me *Block) IsMethod(typeName string) bool {
+	// todo
+	return false
+}
+
+func (me *Block) IsType(typeName string) bool {
+	for _, t := range FindTypes(me.src) {
+		if t == typeName {
+			return true
+		}
+	}
+	return false
+}
 
 // Index returns an index of the Go src types and funcs
 func Index(src []byte) []int {

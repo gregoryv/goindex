@@ -5,6 +5,7 @@ import (
 	"go/token"
 )
 
+// Index returns an index of the Go src types and funcs
 func Index(src []byte) []int {
 	var s scanner.Scanner
 	fset := token.NewFileSet()
@@ -12,7 +13,8 @@ func Index(src []byte) []int {
 	s.Init(file, src, nil /* no error handler */, scanner.ScanComments)
 
 	var index []int
-
+	var comment int
+loop:
 	for {
 		pos, tok, lit := s.Scan()
 		if tok == token.EOF {
@@ -21,7 +23,10 @@ func Index(src []byte) []int {
 		j := fset.Position(pos).Offset
 
 		switch tok {
-		case token.STRING, token.IDENT, token.COMMENT:
+		case token.COMMENT:
+			comment = j // store for later to include in type or func
+			continue loop
+		case token.STRING, token.IDENT:
 			j = fset.Position(pos).Offset + len(lit)
 		case token.TYPE, token.FUNC:
 		default:
@@ -32,9 +37,13 @@ func Index(src []byte) []int {
 		switch tok {
 		case token.TYPE, token.FUNC:
 			// add start of
+			if comment > 0 {
+				j = comment
+			}
 			index = append(index, j)
 			index = append(index, moveToEnd(fset, s))
 		}
+		comment = -1
 	}
 	return index
 }

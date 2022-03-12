@@ -30,7 +30,8 @@ _ = "hey"
 }
 
 func Test_Index(t *testing.T) {
-	src := []byte(`package x
+	src := []byte(`// package x does something
+package x
 
 // X stores info
 type X struct {

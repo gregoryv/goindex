@@ -4,8 +4,30 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
 	"testing"
 )
+
+func Example_Index() {
+	src := []byte(`package x
+
+// X stores info
+type X struct {
+}
+
+// not much here
+
+func play() {
+_ = "hey"
+}`)
+
+	index := Index(src)
+	os.Stdout.Write(src[index[0]:index[1]])
+	// output:
+	// // X stores info
+	// type X struct {
+	// }
+}
 
 func Test_Index(t *testing.T) {
 	src := []byte(`package x

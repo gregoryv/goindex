@@ -22,15 +22,21 @@ func play() {
 _ = "hey"
 }`)
 
-	index := Index(src)
-	b := &Block{src: src[index[2]:index[3]]}
-	fmt.Println(b.IsConstructor("X"))
-	b = &Block{src: src[index[0]:index[1]]}
-	fmt.Println(b.IsType("X"))
+	for i, b := range ParseBlocks(src) {
+		fmt.Printf("%v IsConstructor: %5v ", i, b.IsConstructor("X"))
+		fmt.Printf("IsType: %5v ", b.IsType("X"))
+		fmt.Printf("IsMethod: %5v", b.IsMethod("X"))
+		fmt.Println()
+	}
 
 	// output:
-	// true
-	// true
+	// 0 IsConstructor: false IsType: false IsMethod: false
+	// 1 IsConstructor: false IsType:  true IsMethod: false
+	// 2 IsConstructor: false IsType: false IsMethod: false
+	// 3 IsConstructor:  true IsType: false IsMethod: false
+	// 4 IsConstructor: false IsType: false IsMethod: false
+	// 5 IsConstructor: false IsType: false IsMethod: false
+
 }
 
 func Example_Index() {

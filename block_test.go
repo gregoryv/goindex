@@ -18,12 +18,15 @@ func NewX() *X { return &X{} }
 
 func (x *X) play() {
 _ = "hey"
-}`)
+}
+`)
 
 	blocks := ParseBlocks(src)
 	fmt.Println(blocks[3].String())
+	fmt.Println(blocks[5].String())
 	// output:
-	// X NewX
+	// Constructor X NewX
+	// Method X NewX
 }
 
 func TestBlock_WriteTo(t *testing.T) {

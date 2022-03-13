@@ -38,20 +38,23 @@ loop:
 			_, _, lit := s.Scan()
 			b.name = lit
 			b.rel = lit
-			b.isType = true // mark
+			b.decl = DeclType // mark
 
 		case token.FUNC:
 			_, tok, lit := s.Scan()
 			switch tok {
 
 			case token.LPAREN: // ie. method
-				b.isMethod = true // mark
+				b.decl = DeclMethod
 				b.rel = receiverName(&s)
 				_, _, lit := s.Scan()
 				b.name = lit // name of method
 
 			case token.IDENT: // func or constructor
 				b.name = lit
+				b.decl = DeclFunc
+
+				// todo mark as constructor
 				skipFuncArgs(&s)
 				b.rel = returnName(&s)
 			}
@@ -59,6 +62,39 @@ loop:
 	}
 	return b
 }
+
+type Block struct {
+	src []byte
+
+	name string // if type, method or constructor
+
+	// rel is the type name this block is related to
+	// for methods and constructors it's the name of the type
+	// for type blocks it's the same as the name field
+	rel string
+
+	// todo replace below with a type declaration int
+	decl Declaration
+}
+
+func (me *Block) String() string {
+	return fmt.Sprintf("%s %s %s", me.decl.String(), me.rel, me.name)
+}
+
+func (me *Block) WriteTo(w io.Writer) {
+	w.Write(me.src)
+}
+
+//go:generate stringer -type Declaration -trimprefix Decl
+type Declaration int
+
+const (
+	DeclOther Declaration = iota
+	DeclType
+	DeclMethod
+	DeclConstructor
+	DeclFunc
+)
 
 func receiverName(s *scanner.Scanner) string {
 	var name string
@@ -117,29 +153,4 @@ loop:
 		}
 	}
 	return name
-}
-
-type Block struct {
-	src []byte
-
-	name string // if type, method or constructor
-
-	// rel is the type name this block is related to
-	// for methods and constructors it's the name of the type
-	// for type blocks it's the same as the name field
-	rel string
-
-	isType bool
-
-	isMethod      bool
-	isConstructor bool
-	isFunc        bool
-}
-
-func (me *Block) String() string {
-	return fmt.Sprintf("%s %s", me.rel, me.name)
-}
-
-func (me *Block) WriteTo(w io.Writer) {
-	w.Write(me.src)
 }

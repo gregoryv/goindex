@@ -55,3 +55,9 @@ _ = "hey"
 		t.Error(got)
 	}
 }
+
+func TestDeclaration(t *testing.T) {
+	if got := Declaration(-10).String(); got == "" {
+		t.Fail()
+	}
+}

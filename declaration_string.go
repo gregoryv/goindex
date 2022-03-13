@@ -5,8 +5,9 @@ package gosort
 import "strconv"
 
 func _() {
-	// An "invalid array index" compiler error signifies that the constant values have changed.
-	// Re-run the stringer command to generate them again.
+	// An "invalid array index" compiler error signifies that the
+	// constant values have changed.  Re-run the stringer command to
+	// generate them again.
 	var x [1]struct{}
 	_ = x[DeclOther-0]
 	_ = x[DeclType-1]

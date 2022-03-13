@@ -4,7 +4,37 @@ import (
 	"bytes"
 	"fmt"
 	"testing"
+
+	"github.com/gregoryv/golden"
 )
+
+func TestSortBlocks(t *testing.T) {
+	src := []byte(`package x
+
+// X stores info
+type X struct {
+}
+func NewX() *X { return &X{} }
+
+// not much here
+
+func (x *X) play() {
+_ = "hey"
+}
+
+func sum(a, b int) (int, error) { return nil }
+func NewRun() {} // not a constructor
+`)
+
+	blocks := ParseBlocks(src)
+	SortBlocks(blocks[1:], "X")
+
+	var buf bytes.Buffer
+	for _, b := range blocks {
+		b.WriteTo(&buf)
+	}
+	golden.Assert(t, buf.String())
+}
 
 func ExampleBlock() {
 	src := []byte(`package x

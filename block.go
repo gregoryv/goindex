@@ -5,8 +5,29 @@ import (
 	"go/scanner"
 	"go/token"
 	"io"
+	"sort"
 	"strings"
 )
+
+func SortBlocks(blocks []Block, types ...string) {
+	sort.Sort(&ByCTM{Blocks(blocks)})
+}
+
+type Blocks []Block
+
+func (me Blocks) Len() int      { return len(me) }
+func (me Blocks) Swap(i, j int) { me[i], me[j] = me[j], me[i] }
+
+// ByCTM orders blocks in Constuctor Type Method order
+type ByCTM struct{ Blocks }
+
+func (me *ByCTM) Less(i, j int) bool {
+
+	id := me.Blocks[i].decl
+	jd := me.Blocks[j].decl
+
+	return id < jd
+}
 
 func ParseBlocks(src []byte) []Block {
 	result := make([]Block, 0)
@@ -93,9 +114,9 @@ type Declaration int
 
 const (
 	DeclOther Declaration = iota
+	DeclConstructor
 	DeclType
 	DeclMethod
-	DeclConstructor
 	DeclFunc
 )
 

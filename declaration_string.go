@@ -5,20 +5,19 @@ package gosort
 import "strconv"
 
 func _() {
-	// An "invalid array index" compiler error signifies that the
-	// constant values have changed.  Re-run the stringer command to
-	// generate them again.
+	// An "invalid array index" compiler error signifies that the constant values have changed.
+	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
 	_ = x[DeclOther-0]
-	_ = x[DeclType-1]
-	_ = x[DeclMethod-2]
-	_ = x[DeclConstructor-3]
+	_ = x[DeclConstructor-1]
+	_ = x[DeclType-2]
+	_ = x[DeclMethod-3]
 	_ = x[DeclFunc-4]
 }
 
-const _Declaration_name = "OtherTypeMethodConstructorFunc"
+const _Declaration_name = "OtherConstructorTypeMethodFunc"
 
-var _Declaration_index = [...]uint8{0, 5, 9, 15, 26, 30}
+var _Declaration_index = [...]uint8{0, 5, 16, 20, 26, 30}
 
 func (i Declaration) String() string {
 	if i < 0 || i >= Declaration(len(_Declaration_index)-1) {

@@ -1,6 +1,7 @@
 package gosort
 
 import (
+	"fmt"
 	"go/scanner"
 	"go/token"
 	"io"
@@ -10,30 +11,21 @@ func ParseBlocks(src []byte) []Block {
 	result := make([]Block, 0)
 	var from int
 	for _, to := range Index(src) {
-		result = append(result, Block{src[from:to]})
+		result = append(result, NewBlock(src[from:to]))
 		from = to
 	}
 	return result
 }
 
-type Block struct {
-	src []byte
-}
-
-func (me *Block) WriteTo(w io.Writer) {
-	w.Write(me.src)
-}
-
-func (me *Block) IsConstructor(typeName string) bool {
-	c := FindConstructors(me.src, typeName)
-	return len(c) > 0
-}
-
-func (me *Block) IsMethod(typeName string) bool {
+func NewBlock(src []byte) Block {
+	b := Block{
+		src: src,
+	}
+	// parse name of type, constructor or method
 	var s scanner.Scanner
 	fset := token.NewFileSet()
-	file := fset.AddFile("", fset.Base(), len(me.src))
-	s.Init(file, me.src, nil /* no error handler */, 0)
+	file := fset.AddFile("", fset.Base(), len(src))
+	s.Init(file, src, nil /* no error handler */, 0)
 
 loop:
 	for {
@@ -41,21 +33,113 @@ loop:
 		switch tok {
 		case token.EOF:
 			break loop
+
+		case token.TYPE:
+			_, _, lit := s.Scan()
+			b.name = lit
+			b.rel = lit
+			b.isType = true // mark
+
 		case token.FUNC:
-			_, tok, _ := s.Scan()
-			if tok == token.LPAREN { // ie. method
-				return true
+			_, tok, lit := s.Scan()
+			switch tok {
+
+			case token.LPAREN: // ie. method
+				b.isMethod = true // mark
+				b.rel = receiverName(&s)
+				_, _, lit := s.Scan()
+				b.name = lit // name of method
+
+			case token.IDENT: // func or constructor
+				b.name = lit
+				skipFuncArgs(&s)
+				b.rel = returnName(&s)
 			}
 		}
 	}
-	return false
+	return b
 }
 
-func (me *Block) IsType(typeName string) bool {
-	for _, t := range FindTypes(me.src) {
-		if t == typeName {
-			return true
+func receiverName(s *scanner.Scanner) string {
+	var name string
+loop:
+	for {
+		_, tok, lit := s.Scan()
+		switch tok {
+		case token.EOF:
+			break loop
+
+		case token.IDENT:
+			name = lit
+
+		case token.RPAREN:
+			break loop
 		}
 	}
-	return false
+	return name
+}
+
+func skipFuncArgs(s *scanner.Scanner) {
+	var left int
+loop:
+	for {
+		_, tok, _ := s.Scan()
+		switch tok {
+		case token.EOF:
+			break loop
+
+		case token.LPAREN:
+			left++
+
+		case token.RPAREN:
+			left--
+			if left == 0 {
+				return
+			}
+		}
+	}
+}
+
+func returnName(s *scanner.Scanner) string {
+	var name string
+loop:
+	for {
+		_, tok, lit := s.Scan()
+		switch tok {
+		case token.EOF:
+			break loop
+
+		case token.IDENT:
+			name = lit
+
+		case token.LBRACE:
+			break loop
+		}
+	}
+	return name
+}
+
+type Block struct {
+	src []byte
+
+	name string // if type, method or constructor
+
+	// rel is the type name this block is related to
+	// for methods and constructors it's the name of the type
+	// for type blocks it's the same as the name field
+	rel string
+
+	isType bool
+
+	isMethod      bool
+	isConstructor bool
+	isFunc        bool
+}
+
+func (me *Block) String() string {
+	return fmt.Sprintf("%s %s", me.rel, me.name)
+}
+
+func (me *Block) WriteTo(w io.Writer) {
+	w.Write(me.src)
 }

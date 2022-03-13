@@ -20,20 +20,10 @@ func (x *X) play() {
 _ = "hey"
 }`)
 
-	for i, b := range ParseBlocks(src) {
-		fmt.Printf("%v IsConstructor: %5v ", i, b.IsConstructor("X"))
-		fmt.Printf("IsType: %5v ", b.IsType("X"))
-		fmt.Printf("IsMethod: %5v", b.IsMethod("X"))
-		fmt.Println()
-	}
-
+	blocks := ParseBlocks(src)
+	fmt.Println(blocks[3].String())
 	// output:
-	// 0 IsConstructor: false IsType: false IsMethod: false
-	// 1 IsConstructor: false IsType:  true IsMethod: false
-	// 2 IsConstructor: false IsType: false IsMethod: false
-	// 3 IsConstructor:  true IsType: false IsMethod: false
-	// 4 IsConstructor: false IsType: false IsMethod: false
-	// 5 IsConstructor: false IsType: false IsMethod:  true
+	// X NewX
 }
 
 func TestBlock_WriteTo(t *testing.T) {

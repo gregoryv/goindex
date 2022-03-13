@@ -8,16 +8,17 @@ func _() {
 	// An "invalid array index" compiler error signifies that the constant values have changed.
 	// Re-run the stringer command to generate them again.
 	var x [1]struct{}
-	_ = x[DeclOther-0]
-	_ = x[DeclConstructor-1]
-	_ = x[DeclType-2]
-	_ = x[DeclMethod-3]
-	_ = x[DeclFunc-4]
+	_ = x[DeclEmpty-0]
+	_ = x[DeclOther-1]
+	_ = x[DeclConstructor-2]
+	_ = x[DeclType-3]
+	_ = x[DeclMethod-4]
+	_ = x[DeclFunc-5]
 }
 
-const _Declaration_name = "OtherConstructorTypeMethodFunc"
+const _Declaration_name = "EmptyOtherConstructorTypeMethodFunc"
 
-var _Declaration_index = [...]uint8{0, 5, 16, 20, 26, 30}
+var _Declaration_index = [...]uint8{0, 5, 10, 21, 25, 31, 35}
 
 func (i Declaration) String() string {
 	if i < 0 || i >= Declaration(len(_Declaration_index)-1) {

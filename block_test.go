@@ -3,6 +3,7 @@ package gosort
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/gregoryv/golden"
@@ -31,9 +32,13 @@ func NewRun() {} // not a constructor
 
 	var buf bytes.Buffer
 	for _, b := range blocks {
+		if b.decl == DeclEmpty {
+			continue
+		}
 		b.WriteTo(&buf)
+		fmt.Fprint(&buf, "\n\n")
 	}
-	golden.Assert(t, buf.String())
+	golden.Assert(t, strings.TrimSpace(buf.String()))
 }
 
 func ExampleBlock() {

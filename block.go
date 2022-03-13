@@ -113,7 +113,8 @@ func (me *Block) WriteTo(w io.Writer) {
 type Declaration int
 
 const (
-	DeclOther Declaration = iota
+	DeclEmpty Declaration = iota
+	DeclOther
 	DeclConstructor
 	DeclType
 	DeclMethod

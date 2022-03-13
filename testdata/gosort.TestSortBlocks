@@ -1,0 +1,17 @@
+package x
+
+func NewX() *X { return &X{} }
+
+// X stores info
+type X struct {
+}
+
+// not much here
+
+func (x *X) play() {
+_ = "hey"
+}
+
+func sum(a, b int) (int, error) { return nil }
+
+func NewRun() {}

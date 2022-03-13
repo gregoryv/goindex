@@ -1,6 +1,7 @@
 package gosort
 
 import (
+	"bytes"
 	"fmt"
 	"go/scanner"
 	"go/token"
@@ -82,6 +83,10 @@ loop:
 					b.decl = DeclConstructor
 				}
 			}
+		default:
+			if b.decl == DeclEmpty {
+				b.decl = DeclOther
+			}
 		}
 	}
 	return b
@@ -106,7 +111,7 @@ func (me *Block) String() string {
 }
 
 func (me *Block) WriteTo(w io.Writer) {
-	w.Write(me.src)
+	w.Write(bytes.TrimSpace(me.src))
 }
 
 //go:generate stringer -type Declaration -trimprefix Decl

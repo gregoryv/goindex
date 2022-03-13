@@ -69,28 +69,6 @@ func NewRun() {} // not a constructor
 	// Func error sum
 }
 
-func TestBlock_WriteTo(t *testing.T) {
-	src := []byte(`// package x does something
-package x
-
-// X stores info
-type X struct {
-}
-
-// not much here
-
-func play() {
-_ = "hey"
-}`)
-	var buf bytes.Buffer
-	for _, b := range ParseBlocks(src) {
-		b.WriteTo(&buf)
-	}
-	if got := buf.String(); got != string(src) {
-		t.Error(got)
-	}
-}
-
 func TestDeclaration(t *testing.T) {
 	if got := Declaration(-10).String(); got == "" {
 		t.Fail()

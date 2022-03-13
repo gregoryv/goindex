@@ -19,14 +19,19 @@ func NewX() *X { return &X{} }
 func (x *X) play() {
 _ = "hey"
 }
+
+func sum(a, b int) (int, error) { return nil }
+func NewRun() {} // not a constructor
 `)
 
 	blocks := ParseBlocks(src)
 	fmt.Println(blocks[3].String())
 	fmt.Println(blocks[5].String())
+	fmt.Println(blocks[7].String())
 	// output:
 	// Constructor X NewX
-	// Method X NewX
+	// Method X play
+	// Func error sum
 }
 
 func TestBlock_WriteTo(t *testing.T) {

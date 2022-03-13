@@ -5,6 +5,7 @@ import (
 	"go/scanner"
 	"go/token"
 	"io"
+	"strings"
 )
 
 func ParseBlocks(src []byte) []Block {
@@ -54,9 +55,11 @@ loop:
 				b.name = lit
 				b.decl = DeclFunc
 
-				// todo mark as constructor
 				skipFuncArgs(&s)
 				b.rel = returnName(&s)
+				if strings.HasPrefix(b.name, "New") && isPublic(b.rel) {
+					b.decl = DeclConstructor
+				}
 			}
 		}
 	}
@@ -95,6 +98,14 @@ const (
 	DeclConstructor
 	DeclFunc
 )
+
+func isPublic(v string) bool {
+	if v == "" {
+		return false
+	}
+	return v[0:0] == strings.ToUpper(v[0:0])
+
+}
 
 func receiverName(s *scanner.Scanner) string {
 	var name string

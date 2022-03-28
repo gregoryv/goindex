@@ -2,7 +2,7 @@ package gosort
 
 import "os"
 
-func Example() {
+func ExampleGoSort_Run() {
 	cmd := New(os.Stdout, []byte(`package x
 type Car struct{}
 func NewCar() *Car { return &Car{} }

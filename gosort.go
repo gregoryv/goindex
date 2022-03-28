@@ -18,5 +18,12 @@ type GoSort struct {
 }
 
 func (me *GoSort) Run() error {
-	return fmt.Errorf("GoSort.Run: todo")
+	blocks := ParseBlocks(me.src)
+	SortBlocks(blocks)
+
+	for _, b := range blocks {
+		b.WriteTo(me.dst)
+		fmt.Fprintln(me.dst)
+	}
+	return nil
 }

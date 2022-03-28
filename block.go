@@ -102,7 +102,6 @@ type Block struct {
 	// for type blocks it's the same as the name field
 	rel string
 
-	// todo replace below with a type declaration int
 	decl Declaration
 }
 

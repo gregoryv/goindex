@@ -12,7 +12,7 @@ func Index(src []byte) []int {
 	file := fset.AddFile("", fset.Base(), len(src))
 	s.Init(file, src, nil /* no error handler */, scanner.ScanComments)
 
-	var index []int
+	index := []int{0} // always start at first
 	var comment int
 loop:
 	for {
@@ -33,7 +33,6 @@ loop:
 			j = fset.Position(pos).Offset + len(tok.String())
 		}
 
-		//log.Println("i:", i, "j:", j)
 		switch tok {
 		case token.TYPE, token.FUNC:
 			// add start of
@@ -41,7 +40,10 @@ loop:
 				j = comment
 			}
 			index = append(index, j)
-			index = append(index, moveToEnd(fset, s))
+			e := moveToEnd(fset, s)
+			index = append(index, e)
+			debug.Println("j:", j, "e:", e)
+
 		}
 		comment = -1
 	}

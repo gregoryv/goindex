@@ -6,6 +6,8 @@ import (
 	"go/scanner"
 	"go/token"
 	"io"
+	"io/ioutil"
+	"log"
 	"sort"
 	"strings"
 )
@@ -23,18 +25,18 @@ func (me Blocks) Swap(i, j int) { me[i], me[j] = me[j], me[i] }
 type ByCTM struct{ Blocks }
 
 func (me *ByCTM) Less(i, j int) bool {
-
-	id := me.Blocks[i].decl
-	jd := me.Blocks[j].decl
-
-	return id < jd
+	return me.Blocks[i].decl < me.Blocks[j].decl
 }
 
 func ParseBlocks(src []byte) []Block {
 	result := make([]Block, 0)
 	var from int
 	for _, to := range Index(src) {
-		result = append(result, NewBlock(src[from:to]))
+		if to < from {
+			debug.Println(string(src[225:275]))
+		}
+		b := NewBlock(src[from:to])
+		result = append(result, b)
 		from = to
 	}
 	return result
@@ -191,3 +193,9 @@ loop:
 	}
 	return name
 }
+
+func SetDebugOutput(w io.Writer) {
+	debug.SetOutput(w)
+}
+
+var debug = log.New(ioutil.Discard, "", 0)

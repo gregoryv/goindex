@@ -25,6 +25,7 @@ func ParseSource(src []byte) []Section {
 		index := indexAll(src, []byte(sep))
 		for _, position := range index {
 			sections = append(sections, Section{
+				src:      src,
 				position: position,
 				ident:    strings.TrimSpace(sep),
 			})
@@ -75,6 +76,7 @@ func (s byPosition) Less(i, j int) bool {
 // ----------------------------------------
 
 type Section struct {
+	src      []byte
 	position int
 	ident    string
 }

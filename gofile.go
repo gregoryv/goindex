@@ -98,7 +98,7 @@ func (me *Section) IsConstructor() bool {
 }
 
 func (me *Section) IsMethod() bool {
-	if me.ident != "func" {
+	if !me.IsFunc() {
 		return false
 	}
 	i := me.Position() + 5 // func (
@@ -106,10 +106,7 @@ func (me *Section) IsMethod() bool {
 }
 
 func (me *Section) IsFunc() bool {
-	if me.ident != "func" {
-		return false
-	}
-	return true
+	return me.ident == "func"
 }
 
 func (me *Section) IsComment() bool {

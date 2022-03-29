@@ -115,3 +115,21 @@ comment
 		}
 	}
 }
+
+func TestSection_IsConstructor(t *testing.T) {
+	src := []byte(`
+func (c *Car) NewDoor() *Door {}
+func NewCar() *Car { return &Car{} }
+func New() *Car { return &Car{} }
+`)
+	sections := ParseSource(src)
+
+	if s := sections[0]; s.IsConstructor() {
+		t.Error(s.String())
+	}
+	for _, s := range sections[1:] {
+		if !s.IsConstructor() {
+			t.Error(s.String())
+		}
+	}
+}

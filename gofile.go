@@ -89,6 +89,14 @@ func (me *Section) String() string {
 	return fmt.Sprintf("%d %s", me.position, me.ident)
 }
 
+func (me *Section) IsConstructor() bool {
+	if !me.IsFunc() || me.IsMethod() {
+		return false
+	}
+	name := me.FuncName()
+	return strings.HasPrefix(name, "New")
+}
+
 func (me *Section) IsMethod() bool {
 	if me.ident != "func" {
 		return false

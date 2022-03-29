@@ -78,3 +78,22 @@ func (Car) Model2() {}
 		}
 	}
 }
+
+func TestSection_IsComment(t *testing.T) {
+	src := []byte(`
+// a comment
+
+/* also a
+comment
+*/
+`)
+	sections := ParseSource(src)
+	if len(sections) != 2 {
+		t.Errorf("got %v sections", len(sections))
+	}
+	for _, s := range sections {
+		if !s.IsComment() {
+			t.Error(s.String())
+		}
+	}
+}

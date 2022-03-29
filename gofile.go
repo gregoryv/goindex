@@ -22,7 +22,7 @@ func ParseGoFile(src []byte) *GoFile {
 func ParseSource(src []byte) []Section {
 	sections := make([]Section, 0)
 
-	separators := []string{"func", "type", "//", "\n}"}
+	separators := []string{"func", "type", "//", "/*", "\n}"}
 	for _, sep := range separators {
 		index := indexAll(src, []byte(sep))
 		for _, position := range index {
@@ -102,6 +102,10 @@ func (me *Section) IsFunc() bool {
 		return false
 	}
 	return true
+}
+
+func (me *Section) IsComment() bool {
+	return me.ident == "//" || me.ident == "/*"
 }
 
 func (me *Section) ReceiverType() string {

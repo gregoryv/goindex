@@ -26,11 +26,8 @@ func ParseSource(src []byte) []Section {
 	for _, sep := range separators {
 		index := indexAll(src, []byte(sep))
 		for _, position := range index {
-			sections = append(sections, Section{
-				src:      src,
-				position: position,
-				ident:    strings.TrimSpace(sep),
-			})
+			s := NewSection(src, position, strings.TrimSpace(sep))
+			sections = append(sections, s)
 		}
 	}
 	sort.Sort(byPosition(sections))
@@ -77,10 +74,20 @@ func (s byPosition) Less(i, j int) bool {
 
 // ----------------------------------------
 
+func NewSection(src []byte, position int, ident string) Section {
+	return Section{
+		src:         src,
+		docPosition: -1,
+		position:    position,
+		ident:       ident,
+	}
+}
+
 type Section struct {
-	src      []byte
-	position int
-	ident    string
+	src         []byte
+	docPosition int
+	position    int
+	ident       string
 }
 
 func (me *Section) Position() int { return me.position }

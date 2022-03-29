@@ -21,6 +21,7 @@ func Test_indexFile(t *testing.T) {
 	if got != exp {
 		golden.AssertEquals(t, got, exp)
 	}
+
 }
 
 func TestSection_String(t *testing.T) {
@@ -30,5 +31,31 @@ func TestSection_String(t *testing.T) {
 	}
 	if got := s.String(); got == "" {
 		t.Fail()
+	}
+}
+
+func TestSection_IsMethod(t *testing.T) {
+	src := []byte(`
+type Car struct{}
+func (c *Car) Model() {}`)
+	sections := ParseSource(src)
+	if s := sections[0]; s.IsMethod() {
+		t.Error(s.String())
+	}
+	if s := sections[1]; !s.IsMethod() {
+		t.Error(s.String())
+	}
+}
+
+func TestSection_IsFunc(t *testing.T) {
+	src := []byte(`
+type Car struct{}
+func Model(c *Car) {}`)
+	sections := ParseSource(src)
+	if s := sections[0]; s.IsFunc() {
+		t.Error(s.String())
+	}
+	if s := sections[1]; !s.IsFunc() {
+		t.Error(s.String())
 	}
 }

@@ -86,3 +86,18 @@ func (me *Section) Position() int { return me.position }
 func (me *Section) String() string {
 	return fmt.Sprintf("%d %s", me.position, me.ident)
 }
+
+func (me *Section) IsMethod() bool {
+	if me.ident != "func" {
+		return false
+	}
+	i := me.Position() + 5 // func (
+	return me.src[i] == '('
+}
+
+func (me *Section) IsFunc() bool {
+	if me.ident != "func" {
+		return false
+	}
+	return true
+}

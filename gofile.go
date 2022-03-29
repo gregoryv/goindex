@@ -6,6 +6,8 @@ import (
 	"io"
 	"sort"
 	"strings"
+
+	"github.com/gregoryv/nexus"
 )
 
 func ParseGoFile(src []byte) *GoFile {
@@ -37,19 +39,15 @@ type GoFile struct {
 	sections []Section
 }
 
-func (me *GoFile) WriteTo(w io.Writer) (int, error) {
+func (me *GoFile) WriteTo(w io.Writer) (int64, error) {
 	var last int
-	var total int
+	p, err := nexus.NewPrinter(w)
 	for _, s := range me.sections {
-		n, err := w.Write(me.src[last:s.Position()])
-		if err != nil {
-			return total + n, err
-		}
-		total += n
+		p.Write(me.src[last:s.Position()])
 		last = s.Position()
 	}
-	n, err := w.Write(me.src[last:]) // write final
-	return total + n, err
+	p.Write(me.src[last:]) // write final
+	return p.Written, *err
 }
 
 func indexAll(src, sep []byte) []int {

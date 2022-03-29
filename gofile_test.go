@@ -15,11 +15,20 @@ func Test_indexFile(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	gf := ParseGoFile(src)
-	gf.WriteTo(&buf)
+	ParseGoFile(src).WriteTo(&buf)
 
 	got, exp := buf.String(), string(src)
 	if got != exp {
 		golden.AssertEquals(t, got, exp)
+	}
+}
+
+func TestSection_String(t *testing.T) {
+	s := Section{
+		position: 1,
+		ident:    "x",
+	}
+	if got := s.String(); got == "" {
+		t.Fail()
 	}
 }

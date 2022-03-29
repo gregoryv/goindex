@@ -165,3 +165,7 @@ func (me *Section) FuncName() string {
 	}
 	return name
 }
+
+func (me *Section) IsType() bool {
+	return me.ident == "type"
+}

@@ -133,3 +133,17 @@ func New() *Car { return &Car{} }
 		}
 	}
 }
+
+func TestSection_IsType(t *testing.T) {
+	src := []byte(`
+func sum() {}
+type Car struct{}
+type Vehicle interface{}`)
+	sections := ParseSource(src)
+	if s := sections[0]; s.IsType() {
+		t.Error(s.String())
+	}
+	if s := sections[1]; !s.IsType() {
+		t.Error(s.String())
+	}
+}

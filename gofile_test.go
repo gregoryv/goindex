@@ -134,6 +134,29 @@ func New() *Car { return &Car{} }
 	}
 }
 
+func TestSection_ConstructorType(t *testing.T) {
+	src := []byte(`
+func newCar() *Car {} 
+func NewCar2() (*Car, error) { 
+return &Car{} 
+}
+func NewCar() *Car { return &Car{} }
+func New() *Car { return &Car{} }
+`)
+	sections := ParseSource(src)
+	if s := sections[0]; s.ConstructorType() != "" {
+		t.Error(s.String())
+	}
+	for i, s := range sections[1:] {
+		if !s.IsConstructor() {
+			t.Fatal(i, s.String(), string(src[s.Position():]))
+		}
+		if got := s.ConstructorType(); got != "Car" {
+			t.Error(i, got)
+		}
+	}
+}
+
 func TestSection_IsType(t *testing.T) {
 	src := []byte(`
 func sum() {}

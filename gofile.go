@@ -22,7 +22,7 @@ func ParseGoFile(src []byte) *GoFile {
 func ParseSource(src []byte) []Section {
 	sections := make([]Section, 0)
 
-	separators := []string{"func", "type", "//", "/*", "\n}"}
+	separators := []string{"func", "type", "//", "/*"}
 	for _, sep := range separators {
 		index := indexAll(src, []byte(sep))
 		for _, position := range index {
@@ -95,6 +95,36 @@ func (me *Section) IsConstructor() bool {
 	}
 	name := me.FuncName()
 	return strings.HasPrefix(name, "New")
+}
+
+func (me *Section) ConstructorType() string {
+	if !me.IsConstructor() {
+		return ""
+	}
+	src := me.src[me.Position():]
+	var s scanner.Scanner
+	fset := token.NewFileSet()
+	file := fset.AddFile("", fset.Base(), len(src))
+	s.Init(file, src, nil, 0)
+
+	var typ string
+	var inside bool
+	for {
+		_, tok, lit := s.Scan()
+		if tok == token.IDENT && lit != "error" {
+			typ = lit
+		}
+		if tok == token.LPAREN {
+			inside = true
+		}
+		if tok == token.RPAREN {
+			inside = false
+		}
+		if !inside && tok == token.LBRACE {
+			break
+		}
+	}
+	return typ
 }
 
 func (me *Section) IsMethod() bool {

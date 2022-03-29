@@ -3,6 +3,8 @@ package gosort
 import (
 	"bytes"
 	"fmt"
+	"go/scanner"
+	"go/token"
 	"io"
 	"sort"
 	"strings"
@@ -100,4 +102,27 @@ func (me *Section) IsFunc() bool {
 		return false
 	}
 	return true
+}
+
+func (me *Section) ReceiverType() string {
+	if !me.IsMethod() {
+		return ""
+	}
+	src := me.src[me.Position():]
+	var s scanner.Scanner
+	fset := token.NewFileSet()
+	file := fset.AddFile("", fset.Base(), len(src))
+	s.Init(file, src, nil, 0)
+
+	var receiver string
+	for {
+		_, tok, lit := s.Scan()
+		if tok == token.IDENT {
+			receiver = lit
+		}
+		if tok == token.RPAREN {
+			break
+		}
+	}
+	return receiver
 }

@@ -59,3 +59,22 @@ func Model(c *Car) {}`)
 		t.Error(s.String())
 	}
 }
+
+func TestSection_ReceiverType(t *testing.T) {
+	src := []byte(`
+func sum() {}
+func (c *Car) Model() {}
+func (*Car) Model1() {}
+func (Car) Model2() {}
+`)
+	sections := ParseSource(src)
+
+	if s := sections[0]; s.ReceiverType() != "" {
+		t.Error("got ", s.ReceiverType())
+	}
+	for _, s := range sections[1:] {
+		if s.ReceiverType() != "Car" {
+			t.Error(s.ReceiverType())
+		}
+	}
+}

@@ -68,13 +68,31 @@ func (*Car) Model1() {}
 func (Car) Model2() {}
 `)
 	sections := ParseSource(src)
-
 	if s := sections[0]; s.ReceiverType() != "" {
 		t.Error("got ", s.ReceiverType())
 	}
 	for _, s := range sections[1:] {
 		if s.ReceiverType() != "Car" {
 			t.Error(s.ReceiverType())
+		}
+	}
+}
+
+func TestSection_FuncName(t *testing.T) {
+	src := []byte(`
+type Car struct{}
+func Model() {}
+func (c *Car) Model() {}
+func (*Car) Model() {}
+func (Car) Model() {}
+`)
+	sections := ParseSource(src)
+	if s := sections[0]; s.FuncName() != "" {
+		t.Error("got ", s.FuncName())
+	}
+	for _, s := range sections[1:] {
+		if got := s.FuncName(); got != "Model" {
+			t.Error(got)
 		}
 	}
 }

@@ -130,3 +130,30 @@ func (me *Section) ReceiverType() string {
 	}
 	return receiver
 }
+
+func (me *Section) FuncName() string {
+	if !me.IsFunc() {
+		return ""
+	}
+
+	src := me.src[me.Position():]
+	if me.IsMethod() {
+		src = me.src[me.Position()+6:]
+	}
+	var s scanner.Scanner
+	fset := token.NewFileSet()
+	file := fset.AddFile("", fset.Base(), len(src))
+	s.Init(file, src, nil, 0)
+
+	var name string
+	for {
+		_, tok, lit := s.Scan()
+		if tok == token.IDENT {
+			name = lit
+		}
+		if tok == token.LPAREN {
+			break
+		}
+	}
+	return name
+}

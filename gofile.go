@@ -13,7 +13,6 @@ func ParseGoFile(src []byte) *GoFile {
 		src:      src,
 		sections: ParseSource(src),
 	}
-
 }
 
 func ParseSource(src []byte) []Section {
@@ -29,7 +28,6 @@ func ParseSource(src []byte) []Section {
 			})
 		}
 	}
-
 	sort.Sort(byPosition(sections))
 	return sections
 }

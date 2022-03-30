@@ -52,6 +52,26 @@ func Index(src []byte) []Section {
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
+			// todo find name of func
+			c.Next()
+			var name string
+			if c.Token() == token.LPAREN {
+				// skip the receiver
+				for c.Next() {
+					if c.Token() == token.RPAREN {
+						break
+					}
+				}
+				c.Next()
+				if c.Token() == token.IDENT {
+					name = c.Lit()
+				}
+
+			} else {
+				if c.Token() == token.IDENT {
+					name = c.Lit()
+				}
+			}
 			c.scanSignature()
 			c.scanBlockStart()
 			c.scanBlockEnd()
@@ -61,6 +81,7 @@ func Index(src []byte) []Section {
 					from: from,
 					to:   to,
 				},
+				name: name,
 			})
 		}
 		if c.Token() != token.COMMENT {
@@ -103,17 +124,19 @@ type typeSect struct {
 func (me *typeSect) Decl() string { return "t:" }
 
 func (me *typeSect) String() string {
-	return fmt.Sprintf("%s %s", me.name, me.variant)
+	return fmt.Sprintf("type %s %s", me.name, me.variant)
 }
 
 // ----------------------------------------
 
 type funcSect struct {
 	span
+
+	name string
 }
 
 func (me *funcSect) Decl() string   { return "f:" }
-func (me *funcSect) String() string { return "" }
+func (me *funcSect) String() string { return "func " + me.name }
 
 // ----------------------------------------
 

@@ -27,6 +27,15 @@ func TestIndex_usingScanner(t *testing.T) {
 		}
 	}
 
+	var buf bytes.Buffer
+	for _, s := range sections {
+		buf.Write(src[s.From():s.To()])
+	}
+	got := buf.String()
+	if !strings.Contains(got, "Func comment") {
+		t.Log(got)
+		t.Error("missing related comment")
+	}
 }
 
 func Index(src []byte) []Section {
@@ -38,17 +47,21 @@ func Index(src []byte) []Section {
 	c := NewCursor(&s)
 
 	sections := make([]Section, 0)
-	// todo fix the comment relation
-	var comment string
+
 	var from int
 	for c.Next() {
 		pos := c.Pos()
 		if c.Token() == token.COMMENT {
-			comment = c.Lit()       // save comment
 			from = file.Offset(pos) // and position to include in func blocks
+			l := len(c.Lit())
+			prefix := string(src[from+l+1 : from+l+5]) // if related it's either func or type
+			//fmt.Printf("l=%v %q\n", l, prefix)
+			if prefix != "func" {
+				from = -1
+			}
 		}
 		if c.Token() == token.FUNC {
-			if comment == "" { // comment close by
+			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
 			c.scanSignature()
@@ -67,7 +80,7 @@ func Index(src []byte) []Section {
 			})
 		}
 		if c.Token() != token.COMMENT {
-			comment = ""
+			from = -1
 		}
 	}
 	return sections

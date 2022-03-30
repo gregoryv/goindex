@@ -27,7 +27,25 @@ func Index(src []byte) []Section {
 				from = -1
 			}
 		}
-		if c.Token() == token.FUNC {
+		switch c.Token() {
+		case token.TYPE:
+			if from == -1 { // no related comment
+				from = file.Offset(pos)
+			}
+			c.scanBlockStart()
+			c.scanBlockEnd()
+			end := c.Pos()
+			if end == 0 {
+				panic("missing block end")
+			}
+			to := file.Offset(end) + 1
+			sections = append(sections, &typeSect{
+				span: span{
+					from: from,
+					to:   to,
+				},
+			})
+		case token.FUNC:
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
@@ -76,18 +94,21 @@ type Section interface {
 	Decl() string
 }
 
+type typeSect struct {
+	span
+}
+
+func (me *typeSect) Decl() string { return "type" }
+
+// ----------------------------------------
+
 type funcSect struct {
 	span
 }
 
 func (me *funcSect) Decl() string { return "func" }
 
-type span struct {
-	from, to int
-}
-
-func (me *span) From() int { return me.from }
-func (me *span) To() int   { return me.to }
+// ----------------------------------------
 
 func newOtherSect(from, to int) *otherSect {
 	return &otherSect{span: span{from: from, to: to}}
@@ -98,6 +119,15 @@ type otherSect struct {
 }
 
 func (me *otherSect) Decl() string { return "other" }
+
+// ----------------------------------------
+
+type span struct {
+	from, to int
+}
+
+func (me *span) From() int { return me.from }
+func (me *span) To() int   { return me.to }
 
 // ----------------------------------------
 

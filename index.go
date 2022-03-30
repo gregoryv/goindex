@@ -1,6 +1,7 @@
 package goindex
 
 import (
+	"fmt"
 	"go/scanner"
 	"go/token"
 )
@@ -32,6 +33,10 @@ func Index(src []byte) []Section {
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
+			c.Next()
+			name := c.Lit()
+			c.Next()
+			variant := c.Lit()
 			c.scanBlockStart()
 			c.scanBlockEnd()
 			to := c.At(file) + 1
@@ -40,6 +45,8 @@ func Index(src []byte) []Section {
 					from: from,
 					to:   to,
 				},
+				name:    name,
+				variant: variant,
 			})
 		case token.FUNC:
 			if from == -1 { // no related comment
@@ -84,13 +91,20 @@ type Section interface {
 	From() int
 	To() int
 	Decl() string
+	String() string
 }
 
 type typeSect struct {
 	span
+	name    string
+	variant string // struct or interface
 }
 
-func (me *typeSect) Decl() string { return "type" }
+func (me *typeSect) Decl() string { return "t:" }
+
+func (me *typeSect) String() string {
+	return fmt.Sprintf("%s %s", me.name, me.variant)
+}
 
 // ----------------------------------------
 
@@ -98,7 +112,8 @@ type funcSect struct {
 	span
 }
 
-func (me *funcSect) Decl() string { return "func" }
+func (me *funcSect) Decl() string   { return "f:" }
+func (me *funcSect) String() string { return "" }
 
 // ----------------------------------------
 
@@ -110,7 +125,8 @@ type otherSect struct {
 	span
 }
 
-func (me *otherSect) Decl() string { return "other" }
+func (me *otherSect) Decl() string   { return "o:" }
+func (me *otherSect) String() string { return "" }
 
 // ----------------------------------------
 

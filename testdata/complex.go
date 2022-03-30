@@ -22,3 +22,5 @@ func (me *Boat) Model() string {
 func DoSomething(v interface{ X() }) (interface{ S() int }, error) {
 	return nil, nil
 }
+
+// Decoupled comment

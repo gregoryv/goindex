@@ -48,6 +48,13 @@ func TestIndex(t *testing.T) {
 			t.Error(got)
 		}
 	})
+
+	t.Run("ends with src len", func(t *testing.T) {
+		exp := len(src)
+		if got := sections[len(sections)-1].To(); got != exp {
+			t.Error(got, "expected", exp)
+		}
+	})
 }
 
 func Index(src []byte) []Section {
@@ -95,15 +102,28 @@ func Index(src []byte) []Section {
 			from = -1
 		}
 	}
-	if sections[0].From() != 0 {
-		return append([]Section{
+	// insert the first section if it's unspecified
+	first := sections[0]
+	if first.From() != 0 {
+		sections = append([]Section{
 			&otherSect{
 				span: span{
 					from: 0,
-					to:   sections[0].From(),
+					to:   first.From(),
 				},
 			},
 		}, sections...)
+	}
+	last := sections[len(sections)-1]
+	if last.To() != len(src) {
+		sections = append(sections,
+			&otherSect{
+				span: span{
+					from: last.To(),
+					to:   len(src),
+				},
+			},
+		)
 	}
 	return sections
 }

@@ -55,6 +55,10 @@ func Index(src []byte) []Section {
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
+
+			// Fixme: func extra(), ie. no body
+			// See https://go.dev/ref/spec#Function_declarations
+
 			c.scanBlockStart()
 			label := string(src[file.Offset(pos):file.Offset(c.Pos())])
 			c.scanBlockEnd()

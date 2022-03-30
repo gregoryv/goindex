@@ -10,7 +10,12 @@ import (
 )
 
 func main() {
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s FILES\n", os.Args[0])
+		flag.PrintDefaults()
+	}
 	flag.Parse()
+
 	log.SetFlags(0)
 
 	for _, filename := range flag.Args() {

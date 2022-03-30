@@ -1,9 +1,11 @@
 package gosort
 
 import (
+	"bytes"
 	"go/scanner"
 	"go/token"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -53,8 +55,14 @@ func TestIndex_usingScanner(t *testing.T) {
 			comment = ""
 		}
 	}
+
+	var buf bytes.Buffer
 	for _, s := range sections {
-		t.Error(string(src[s.From():s.To()]))
+		buf.Write(src[s.From():s.To()])
+	}
+	got := buf.String()
+	if strings.Contains(got, "// This is") {
+		t.Error("contains unrelated comment")
 	}
 }
 

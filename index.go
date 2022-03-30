@@ -23,7 +23,11 @@ func Index(src []byte) []Section {
 		case token.COMMENT:
 			from = file.Offset(pos) // and position to include in func blocks
 			l := len(c.Lit())
-			prefix := string(src[from+l+1 : from+l+5]) // if related it's either func or type
+			end := from + l + 5
+			if end >= len(src) {
+				end = len(src)
+			}
+			prefix := string(src[from+l+1 : end]) // if related it's either func or type
 			//fmt.Printf("l=%v %q\n", l, prefix)
 			if prefix != "func" {
 				from = -1
@@ -108,6 +112,9 @@ func newImport(from, to int) Section {
 }
 
 func newOther(from, to int, src []byte) Section {
+	if to < from {
+		to = from
+	}
 	part := bytes.TrimSpace(src[from:to])
 	i := bytes.Index(part, []byte("\n"))
 	var label string

@@ -29,6 +29,16 @@ func Index(src []byte) []Section {
 			}
 		}
 		switch c.Token() {
+		case token.IMPORT:
+			if from == -1 { // no related comment
+				from = file.Offset(pos)
+			}
+			c.scanSignature()
+			to := c.At(file) + 1
+			sections = append(sections, &importSect{
+				span: span{from: from, to: to},
+			})
+
 		case token.TYPE:
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
@@ -113,6 +123,12 @@ type Section interface {
 	To() int
 	String() string
 }
+
+type importSect struct {
+	span
+}
+
+func (me *importSect) String() string { return "import" }
 
 type typeSect struct {
 	span

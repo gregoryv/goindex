@@ -19,14 +19,18 @@ func TestIndex_usingScanner(t *testing.T) {
 	s.Init(file, src, nil, scanner.ScanComments)
 
 	c := NewCursor(&s)
-	for {
-		pos, tok, _ := s.Scan()
-		if tok == token.EOF {
-			break
+	var comment string
+	var from int
+	for c.Next() {
+		pos := c.Pos()
+		if c.Token() == token.COMMENT {
+			comment = c.Lit()       // save comment
+			from = file.Offset(pos) // and position to include in func blocks
 		}
-
-		if tok == token.FUNC {
-			from := file.Offset(pos)
+		if c.Token() == token.FUNC {
+			if comment == "" { // comment close by
+				from = file.Offset(pos)
+			}
 			_ = scanSignature(c)
 			_ = scanBlockStart(c)
 			end := scanBlockEnd(c)
@@ -35,6 +39,9 @@ func TestIndex_usingScanner(t *testing.T) {
 			}
 			to := file.Offset(end) + 1
 			t.Error(string(src[from:to]))
+		}
+		if c.Token() != token.COMMENT {
+			comment = ""
 		}
 	}
 }
@@ -71,27 +78,29 @@ func NewCursor(s *scanner.Scanner) *Cursor {
 }
 
 type Cursor struct {
-	s *scanner.Scanner
+	s   *scanner.Scanner
+	tok token.Token
+	pos token.Pos
+	lit string
 
-	tok   token.Token
-	pos   token.Pos
 	paren int
 	brace int
 }
 
+// Next returns true  until token.EOF is found
 func (me *Cursor) Next() bool {
-	pos, tok, _ := me.s.Scan()
-	if tok == token.EOF {
-		return false
-	}
+	pos, tok, lit := me.s.Scan()
 	me.tok = tok
 	me.pos = pos
+	me.lit = lit
 	me.feed(tok)
-	return true
+
+	return tok != token.EOF
 }
 
 func (me *Cursor) Pos() token.Pos     { return me.pos }
 func (me *Cursor) Token() token.Token { return me.tok }
+func (me *Cursor) Lit() string        { return me.lit }
 
 func (me *Cursor) feed(tok token.Token) {
 	switch tok {

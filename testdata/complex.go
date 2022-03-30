@@ -10,7 +10,7 @@ type Boat struct {
 	model string
 }
 
-// Model returns the car model
+// Model returns the model or unknown
 func (me *Boat) Model() string {
 	if me.model == "" {
 		return "unknown"

@@ -1,6 +1,7 @@
 package goindex
 
 import (
+	"bytes"
 	"go/scanner"
 	"go/token"
 )
@@ -32,7 +33,7 @@ func Index(src []byte) []Section {
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
-			c.scanSignature()
+			c.scanParenBlock()
 			to := c.At(file) + 1
 			sections = append(sections, &importSect{
 				span: span{from: from, to: to},
@@ -72,14 +73,14 @@ func Index(src []byte) []Section {
 	var to int
 	for _, s := range sections {
 		if to < s.From() {
-			res = append(res, newOtherSect(to, s.From()))
+			res = append(res, newOtherSect(to, s.From(), src))
 			to = s.To()
 		}
 		res = append(res, s)
 	}
 	last := res[len(res)-1]
 	if last.To() != len(src) {
-		res = append(res, newOtherSect(last.To(), len(src)))
+		res = append(res, newOtherSect(last.To(), len(src), src))
 	}
 
 	return res
@@ -106,9 +107,7 @@ type typeSect struct {
 	variant string // struct or interface
 }
 
-func (me *typeSect) String() string {
-	return me.label
-}
+func (me *typeSect) String() string { return me.label }
 
 // ----------------------------------------
 
@@ -122,15 +121,27 @@ func (me *funcSect) String() string { return me.label }
 
 // ----------------------------------------
 
-func newOtherSect(from, to int) *otherSect {
-	return &otherSect{span: span{from: from, to: to}}
+func newOtherSect(from, to int, src []byte) *otherSect {
+	part := bytes.TrimSpace(src[from:to])
+	i := bytes.Index(part, []byte("\n"))
+	var label string
+	if i > -1 {
+		label = string(part[:i])
+	} else {
+		label = string(part)
+	}
+	return &otherSect{
+		span:  span{from: from, to: to},
+		label: label,
+	}
 }
 
 type otherSect struct {
 	span
+	label string
 }
 
-func (me *otherSect) String() string { return "?" }
+func (me *otherSect) String() string { return me.label }
 
 // ----------------------------------------
 
@@ -183,6 +194,14 @@ func (me *Cursor) Lit() string        { return me.lit }
 func (c *Cursor) scanSignature() token.Pos {
 	for c.Next() {
 		if !c.InsideParen() {
+			break
+		}
+	}
+	return c.Pos()
+}
+func (c *Cursor) scanParenBlock() token.Pos {
+	for c.Next() {
+		if c.Token() == token.SEMICOLON && !c.InsideParen() {
 			break
 		}
 	}

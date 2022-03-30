@@ -1,5 +1,7 @@
 package testdata
 
+import "fmt"
+
 // Decoupled comment
 
 func NewBoat() *Boat {
@@ -13,7 +15,7 @@ type Boat struct {
 // Func comment
 func (me *Boat) Model() string {
 	if me.model == "" {
-		return "unknown"
+		return fmt.Sprintf("%s", "unknown")
 	}
 	// Inline comment
 	return me.model

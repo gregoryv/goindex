@@ -1,7 +1,6 @@
 package goindex
 
 import (
-	"fmt"
 	"go/scanner"
 	"go/token"
 )
@@ -43,11 +42,8 @@ func Index(src []byte) []Section {
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
-			c.Next()
-			name := c.Lit()
-			c.Next()
-			variant := c.Lit()
 			c.scanBlockStart()
+			label := string(src[file.Offset(pos):file.Offset(c.Pos())])
 			c.scanBlockEnd()
 			to := c.At(file) + 1
 			sections = append(sections, &typeSect{
@@ -55,14 +51,12 @@ func Index(src []byte) []Section {
 					from: from,
 					to:   to,
 				},
-				name:    name,
-				variant: variant,
+				label: label,
 			})
 		case token.FUNC:
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
-			// todo find name of func
 			c.Next()
 			var name string
 			if c.Token() == token.LPAREN {
@@ -132,12 +126,13 @@ func (me *importSect) String() string { return "import" }
 
 type typeSect struct {
 	span
+	label   string
 	name    string
 	variant string // struct or interface
 }
 
 func (me *typeSect) String() string {
-	return fmt.Sprintf("type %s %s", me.name, me.variant)
+	return me.label
 }
 
 // ----------------------------------------

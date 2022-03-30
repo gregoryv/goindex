@@ -31,9 +31,10 @@ func TestIndex_usingScanner(t *testing.T) {
 			if comment == "" { // comment close by
 				from = file.Offset(pos)
 			}
-			_ = scanSignature(c)
-			_ = scanBlockStart(c)
-			end := scanBlockEnd(c)
+			c.scanSignature()
+			c.scanBlockStart()
+			c.scanBlockEnd()
+			end := c.Pos()
 			if end == 0 {
 				t.Fatal("missing block end")
 			}
@@ -44,33 +45,6 @@ func TestIndex_usingScanner(t *testing.T) {
 			comment = ""
 		}
 	}
-}
-
-func scanSignature(c *Cursor) token.Pos {
-	for c.Next() {
-		if !c.InsideParen() {
-			break
-		}
-	}
-	return c.Pos()
-}
-
-func scanBlockStart(c *Cursor) token.Pos {
-	for c.Next() {
-		if c.Token() == token.LBRACE && !c.InsideParen() {
-			break
-		}
-	}
-	return c.Pos()
-}
-
-func scanBlockEnd(c *Cursor) token.Pos {
-	for c.Next() {
-		if !c.InsideParen() && !c.InsideBrace() {
-			break
-		}
-	}
-	return c.Pos()
 }
 
 func NewCursor(s *scanner.Scanner) *Cursor {
@@ -101,6 +75,33 @@ func (me *Cursor) Next() bool {
 func (me *Cursor) Pos() token.Pos     { return me.pos }
 func (me *Cursor) Token() token.Token { return me.tok }
 func (me *Cursor) Lit() string        { return me.lit }
+
+func (c *Cursor) scanSignature() token.Pos {
+	for c.Next() {
+		if !c.InsideParen() {
+			break
+		}
+	}
+	return c.Pos()
+}
+
+func (c *Cursor) scanBlockStart() token.Pos {
+	for c.Next() {
+		if c.Token() == token.LBRACE && !c.InsideParen() {
+			break
+		}
+	}
+	return c.Pos()
+}
+
+func (c *Cursor) scanBlockEnd() token.Pos {
+	for c.Next() {
+		if !c.InsideParen() && !c.InsideBrace() {
+			break
+		}
+	}
+	return c.Pos()
+}
 
 func (me *Cursor) feed(tok token.Token) {
 	switch tok {

@@ -18,6 +18,7 @@ func TestIndex_usingScanner(t *testing.T) {
 	file := fset.AddFile("", fset.Base(), len(src))
 	s.Init(file, src, nil, scanner.ScanComments)
 
+	c := NewCursor(&s)
 	for {
 		pos, tok, _ := s.Scan()
 		if tok == token.EOF {
@@ -26,9 +27,9 @@ func TestIndex_usingScanner(t *testing.T) {
 
 		if tok == token.FUNC {
 			from := file.Offset(pos)
-			_ = scanSignature(&s)
-			_ = scanBlockStart(&s)
-			end := scanBlockEnd(&s)
+			_ = scanSignature(c)
+			_ = scanBlockStart(c)
+			end := scanBlockEnd(c)
 			if end == 0 {
 				t.Fatal("missing block end")
 			}
@@ -38,80 +39,61 @@ func TestIndex_usingScanner(t *testing.T) {
 	}
 }
 
-func scanSignature(s *scanner.Scanner) token.Pos {
-	var count int
-	var position token.Pos
-	for {
-		pos, tok, _ := s.Scan()
-		if tok == token.EOF {
-			break
-		}
-
-		if tok == token.LPAREN {
-			count++
-			continue
-		}
-		if tok == token.RPAREN {
-			count--
-			if count == 0 {
-				position = pos
-				break
-			}
-		}
-	}
-	return position
-}
-
-func scanBlockStart(s *scanner.Scanner) token.Pos {
-	var inside bool
-	var position token.Pos
-	for {
-		pos, tok, _ := s.Scan()
-		if tok == token.EOF {
-			break
-		}
-
-		if tok == token.LPAREN {
-			inside = true
-			continue
-		}
-		if tok == token.RPAREN {
-			inside = false
-			continue
-		}
-
-		if tok == token.LBRACE && !inside {
-			position = pos
+func scanSignature(c *Cursor) token.Pos {
+	for c.Next() {
+		if !c.InsideParen() {
 			break
 		}
 	}
-	return position
+	return c.Pos()
 }
 
-func scanBlockEnd(s *scanner.Scanner) token.Pos {
-	var c Cursor
-	var position token.Pos
-
-	for {
-		pos, tok, _ := s.Scan()
-		if tok == token.EOF {
+func scanBlockStart(c *Cursor) token.Pos {
+	for c.Next() {
+		if c.Token() == token.LBRACE && !c.InsideParen() {
 			break
 		}
-		c.Feed(tok)
+	}
+	return c.Pos()
+}
+
+func scanBlockEnd(c *Cursor) token.Pos {
+	for c.Next() {
 		if !c.InsideParen() && !c.InsideBrace() {
-			position = pos
 			break
 		}
 	}
-	return position
+	return c.Pos()
+}
+
+func NewCursor(s *scanner.Scanner) *Cursor {
+	return &Cursor{s: s}
 }
 
 type Cursor struct {
+	s *scanner.Scanner
+
+	tok   token.Token
+	pos   token.Pos
 	paren int
 	brace int
 }
 
-func (me *Cursor) Feed(tok token.Token) {
+func (me *Cursor) Next() bool {
+	pos, tok, _ := me.s.Scan()
+	if tok == token.EOF {
+		return false
+	}
+	me.tok = tok
+	me.pos = pos
+	me.feed(tok)
+	return true
+}
+
+func (me *Cursor) Pos() token.Pos     { return me.pos }
+func (me *Cursor) Token() token.Token { return me.tok }
+
+func (me *Cursor) feed(tok token.Token) {
 	switch tok {
 	case token.LPAREN:
 		me.paren++

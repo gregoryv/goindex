@@ -19,7 +19,8 @@ func Index(src []byte) []Section {
 	var from int
 	for c.Next() {
 		pos := c.Pos()
-		if c.Token() == token.COMMENT {
+		switch c.Token() {
+		case token.COMMENT:
 			from = file.Offset(pos) // and position to include in func blocks
 			l := len(c.Lit())
 			prefix := string(src[from+l+1 : from+l+5]) // if related it's either func or type
@@ -27,8 +28,7 @@ func Index(src []byte) []Section {
 			if prefix != "func" {
 				from = -1
 			}
-		}
-		switch c.Token() {
+
 		case token.IMPORT:
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
@@ -51,6 +51,7 @@ func Index(src []byte) []Section {
 				span:  span{from: from, to: to},
 				label: label,
 			})
+
 		case token.FUNC:
 			if from == -1 { // no related comment
 				from = file.Offset(pos)

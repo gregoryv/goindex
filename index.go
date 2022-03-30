@@ -47,10 +47,7 @@ func Index(src []byte) []Section {
 			c.scanBlockEnd()
 			to := c.At(file) + 1
 			sections = append(sections, &typeSect{
-				span: span{
-					from: from,
-					to:   to,
-				},
+				span:  span{from: from, to: to},
 				label: label,
 			})
 		case token.FUNC:
@@ -81,10 +78,7 @@ func Index(src []byte) []Section {
 			c.scanBlockEnd()
 			to := c.At(file) + 1
 			sections = append(sections, &funcSect{
-				span: span{
-					from: from,
-					to:   to,
-				},
+				span: span{from: from, to: to},
 				name: name,
 			})
 		}

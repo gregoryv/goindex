@@ -1,6 +1,6 @@
 package testdata
 
-// This is an example file for indexing
+// Decoupled comment
 
 func NewBoat() *Boat {
 	return &Boat{}

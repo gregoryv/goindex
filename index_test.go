@@ -15,6 +15,21 @@ func TestIndex_usingScanner(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	sections := Index(src)
+
+	for _, s := range sections {
+		var buf bytes.Buffer
+		buf.Write(src[s.From():s.To()])
+		got := buf.String()
+		if strings.Contains(got, "Decoupled comment") {
+			t.Log(got)
+			t.Error("contains unrelated comment")
+		}
+	}
+
+}
+
+func Index(src []byte) []Section {
 	var s scanner.Scanner
 	fset := token.NewFileSet()
 	file := fset.AddFile("", fset.Base(), len(src))
@@ -23,7 +38,7 @@ func TestIndex_usingScanner(t *testing.T) {
 	c := NewCursor(&s)
 
 	sections := make([]Section, 0)
-
+	// todo fix the comment relation
 	var comment string
 	var from int
 	for c.Next() {
@@ -41,7 +56,7 @@ func TestIndex_usingScanner(t *testing.T) {
 			c.scanBlockEnd()
 			end := c.Pos()
 			if end == 0 {
-				t.Fatal("missing block end")
+				panic("missing block end")
 			}
 			to := file.Offset(end) + 1
 			sections = append(sections, &funcSect{
@@ -55,15 +70,7 @@ func TestIndex_usingScanner(t *testing.T) {
 			comment = ""
 		}
 	}
-
-	var buf bytes.Buffer
-	for _, s := range sections {
-		buf.Write(src[s.From():s.To()])
-	}
-	got := buf.String()
-	if strings.Contains(got, "// This is") {
-		t.Error("contains unrelated comment")
-	}
+	return sections
 }
 
 // ----------------------------------------

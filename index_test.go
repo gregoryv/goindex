@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/gregoryv/golden"
 )
 
 func TestIndex(t *testing.T) {
@@ -14,7 +16,6 @@ func TestIndex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	sections := Index(src)
 
 	t.Run("decoupled comment", func(t *testing.T) {
@@ -64,6 +65,15 @@ func TestIndex(t *testing.T) {
 				t.Errorf("missing section between %v and %v", i, i+1)
 			}
 		}
+	})
+
+	t.Run("equals", func(t *testing.T) {
+		var buf bytes.Buffer
+		for _, s := range sections {
+			buf.Write(src[s.From():s.To()])
+		}
+		got, exp := buf.String(), string(src)
+		golden.AssertEquals(t, got, exp)
 	})
 }
 

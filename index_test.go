@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestIndex_usingScanner(t *testing.T) {
+func TestIndex(t *testing.T) {
 	src, err := os.ReadFile("testdata/complex.go")
 	if err != nil {
 		t.Fatal(err)
@@ -17,25 +17,37 @@ func TestIndex_usingScanner(t *testing.T) {
 
 	sections := Index(src)
 
-	for _, s := range sections {
-		var buf bytes.Buffer
-		buf.Write(src[s.From():s.To()])
-		got := buf.String()
-		if strings.Contains(got, "Decoupled comment") {
-			t.Log(got)
-			t.Error("contains unrelated comment")
+	t.Run("decoupled comment", func(t *testing.T) {
+		for _, s := range sections {
+			var buf bytes.Buffer
+			buf.Write(src[s.From():s.To()])
+			got := buf.String()
+			if strings.Contains(got, "Decoupled comment") {
+				if strings.Contains(got, "func") || strings.Contains(got, "type") {
+					t.Log(got)
+					t.Error("contains unrelated comment")
+				}
+			}
 		}
-	}
+	})
 
-	var buf bytes.Buffer
-	for _, s := range sections {
-		buf.Write(src[s.From():s.To()])
-	}
-	got := buf.String()
-	if !strings.Contains(got, "Func comment") {
-		t.Log(got)
-		t.Error("missing related comment")
-	}
+	t.Run("related comment", func(t *testing.T) {
+		var buf bytes.Buffer
+		for _, s := range sections {
+			buf.Write(src[s.From():s.To()])
+		}
+		got := buf.String()
+		if !strings.Contains(got, "Func comment") {
+			t.Log(got)
+			t.Error("missing related comment")
+		}
+	})
+
+	t.Run("starts from 0", func(t *testing.T) {
+		if got := sections[0].From(); got != 0 {
+			t.Error(got)
+		}
+	})
 }
 
 func Index(src []byte) []Section {
@@ -83,6 +95,16 @@ func Index(src []byte) []Section {
 			from = -1
 		}
 	}
+	if sections[0].From() != 0 {
+		return append([]Section{
+			&otherSect{
+				span: span{
+					from: 0,
+					to:   sections[0].From(),
+				},
+			},
+		}, sections...)
+	}
 	return sections
 }
 
@@ -91,11 +113,14 @@ func Index(src []byte) []Section {
 type Section interface {
 	From() int
 	To() int
+	Decl() string
 }
 
 type funcSect struct {
 	span
 }
+
+func (me *funcSect) Decl() string { return "func" }
 
 type span struct {
 	from, to int
@@ -103,6 +128,12 @@ type span struct {
 
 func (me *span) From() int { return me.from }
 func (me *span) To() int   { return me.to }
+
+type otherSect struct {
+	span
+}
+
+func (me *otherSect) Decl() string { return "other" }
 
 // ----------------------------------------
 

@@ -19,6 +19,9 @@ func TestIndex_usingScanner(t *testing.T) {
 	s.Init(file, src, nil, scanner.ScanComments)
 
 	c := NewCursor(&s)
+
+	sections := make([]Section, 0)
+
 	var comment string
 	var from int
 	for c.Next() {
@@ -39,13 +42,41 @@ func TestIndex_usingScanner(t *testing.T) {
 				t.Fatal("missing block end")
 			}
 			to := file.Offset(end) + 1
-			t.Error(string(src[from:to]))
+			sections = append(sections, &funcSect{
+				span: span{
+					from: from,
+					to:   to,
+				},
+			})
 		}
 		if c.Token() != token.COMMENT {
 			comment = ""
 		}
 	}
+	for _, s := range sections {
+		t.Error(string(src[s.From():s.To()]))
+	}
 }
+
+// ----------------------------------------
+
+type Section interface {
+	From() int
+	To() int
+}
+
+type funcSect struct {
+	span
+}
+
+type span struct {
+	from, to int
+}
+
+func (me *span) From() int { return me.from }
+func (me *span) To() int   { return me.to }
+
+// ----------------------------------------
 
 func NewCursor(s *scanner.Scanner) *Cursor {
 	return &Cursor{s: s}

@@ -111,7 +111,6 @@ func Index(src []byte) []Section {
 type Section interface {
 	From() int
 	To() int
-	Decl() string
 	String() string
 }
 
@@ -120,8 +119,6 @@ type typeSect struct {
 	name    string
 	variant string // struct or interface
 }
-
-func (me *typeSect) Decl() string { return "t:" }
 
 func (me *typeSect) String() string {
 	return fmt.Sprintf("type %s %s", me.name, me.variant)
@@ -135,7 +132,6 @@ type funcSect struct {
 	name string
 }
 
-func (me *funcSect) Decl() string   { return "f:" }
 func (me *funcSect) String() string { return "func " + me.name }
 
 // ----------------------------------------
@@ -148,7 +144,6 @@ type otherSect struct {
 	span
 }
 
-func (me *otherSect) Decl() string   { return "o:" }
 func (me *otherSect) String() string { return "" }
 
 // ----------------------------------------

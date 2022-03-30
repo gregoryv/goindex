@@ -65,7 +65,6 @@ func TestIndex(t *testing.T) {
 			}
 		}
 	})
-
 }
 
 func Index(src []byte) []Section {
@@ -116,25 +115,11 @@ func Index(src []byte) []Section {
 	// insert the first section if it's unspecified
 	first := sections[0]
 	if first.From() != 0 {
-		sections = append([]Section{
-			&otherSect{
-				span: span{
-					from: 0,
-					to:   first.From(),
-				},
-			},
-		}, sections...)
+		sections = append([]Section{newOtherSect(0, first.From())}, sections...)
 	}
 	last := sections[len(sections)-1]
 	if last.To() != len(src) {
-		sections = append(sections,
-			&otherSect{
-				span: span{
-					from: last.To(),
-					to:   len(src),
-				},
-			},
-		)
+		sections = append(sections, newOtherSect(last.To(), len(src)))
 	}
 	return sections
 }
@@ -159,6 +144,10 @@ type span struct {
 
 func (me *span) From() int { return me.from }
 func (me *span) To() int   { return me.to }
+
+func newOtherSect(from, to int) *otherSect {
+	return &otherSect{span: span{from: from, to: to}}
+}
 
 type otherSect struct {
 	span

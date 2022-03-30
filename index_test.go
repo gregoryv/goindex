@@ -55,6 +55,17 @@ func TestIndex(t *testing.T) {
 			t.Error(got, "expected", exp)
 		}
 	})
+
+	t.Run("sections are complete", func(t *testing.T) {
+		for i, s := range sections[:len(sections)-1] {
+			next := sections[i+1]
+			t.Log(s.To(), next.From())
+			if s.To() != next.From() {
+				t.Errorf("missing section between %v and %v", i, i+1)
+			}
+		}
+	})
+
 }
 
 func Index(src []byte) []Section {

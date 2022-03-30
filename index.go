@@ -111,9 +111,10 @@ type Section struct {
 	label string
 }
 
-func (me *Section) String() string { return me.label }
-func (me *Section) From() int      { return me.from }
-func (me *Section) To() int        { return me.to }
+func (me *Section) String() string         { return me.label }
+func (me *Section) From() int              { return me.from }
+func (me *Section) To() int                { return me.to }
+func (me *Section) Grab(src []byte) []byte { return src[me.from:me.to] }
 
 // ----------------------------------------
 

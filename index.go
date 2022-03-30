@@ -35,9 +35,7 @@ func Index(src []byte) []Section {
 			}
 			c.scanParenBlock()
 			to := c.At(file) + 1
-			sections = append(sections, &importSect{
-				span: span{from: from, to: to},
-			})
+			sections = append(sections, newImport(from, to))
 
 		case token.TYPE:
 			if from == -1 { // no related comment
@@ -47,10 +45,7 @@ func Index(src []byte) []Section {
 			label := string(src[file.Offset(pos):file.Offset(c.Pos())])
 			c.scanBlockEnd()
 			to := c.At(file) + 1
-			sections = append(sections, &typeSect{
-				span:  span{from: from, to: to},
-				label: label,
-			})
+			sections = append(sections, newSection(from, to, label))
 
 		case token.FUNC:
 			if from == -1 { // no related comment
@@ -60,10 +55,7 @@ func Index(src []byte) []Section {
 			label := string(src[file.Offset(pos):file.Offset(c.Pos())])
 			c.scanBlockEnd()
 			to := c.At(file) + 1
-			sections = append(sections, &funcSect{
-				span:  span{from: from, to: to},
-				label: label,
-			})
+			sections = append(sections, newSection(from, to, label))
 		}
 		if c.Token() != token.COMMENT {
 			from = -1
@@ -89,40 +81,11 @@ func Index(src []byte) []Section {
 
 // ----------------------------------------
 
-type Section interface {
-	From() int
-	To() int
-	String() string
+func newImport(from, to int) Section {
+	return newSection(from, to, "import")
 }
 
-type importSect struct {
-	span
-}
-
-func (me *importSect) String() string { return "import" }
-
-type typeSect struct {
-	span
-	label   string
-	name    string
-	variant string // struct or interface
-}
-
-func (me *typeSect) String() string { return me.label }
-
-// ----------------------------------------
-
-type funcSect struct {
-	span
-
-	label string
-}
-
-func (me *funcSect) String() string { return me.label }
-
-// ----------------------------------------
-
-func newOtherSect(from, to int, src []byte) *otherSect {
+func newOtherSect(from, to int, src []byte) Section {
 	part := bytes.TrimSpace(src[from:to])
 	i := bytes.Index(part, []byte("\n"))
 	var label string
@@ -131,27 +94,26 @@ func newOtherSect(from, to int, src []byte) *otherSect {
 	} else {
 		label = string(part)
 	}
-	return &otherSect{
-		span:  span{from: from, to: to},
+	return newSection(from, to, label)
+}
+
+func newSection(from, to int, label string) Section {
+	return Section{
+		from:  from,
+		to:    to,
 		label: label,
 	}
 }
 
-type otherSect struct {
-	span
+type Section struct {
+	from, to int
+
 	label string
 }
 
-func (me *otherSect) String() string { return me.label }
-
-// ----------------------------------------
-
-type span struct {
-	from, to int
-}
-
-func (me *span) From() int { return me.from }
-func (me *span) To() int   { return me.to }
+func (me *Section) String() string { return me.label }
+func (me *Section) From() int      { return me.from }
+func (me *Section) To() int        { return me.to }
 
 // ----------------------------------------
 

@@ -144,7 +144,7 @@ type otherSect struct {
 	span
 }
 
-func (me *otherSect) String() string { return "" }
+func (me *otherSect) String() string { return "?" }
 
 // ----------------------------------------
 

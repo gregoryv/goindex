@@ -5,6 +5,8 @@ import (
 	"go/token"
 )
 
+// NewCursor returns a cursor for the given scanner.
+// The scanner should not be used outside of the cursor.
 func NewCursor(s *scanner.Scanner) *Cursor {
 	return &Cursor{s: s}
 }
@@ -20,27 +22,30 @@ type Cursor struct {
 }
 
 // Next returns true  until token.EOF is found
-func (me *Cursor) Next() bool {
-	pos, tok, lit := me.s.Scan()
-	me.tok = tok
-	me.pos = pos
-	me.lit = lit
-	me.feed(tok)
+func (c *Cursor) Next() bool {
+	pos, tok, lit := c.s.Scan()
+	c.tok = tok
+	c.pos = pos
+	c.lit = lit
+	c.feed(tok)
 
 	return tok != token.EOF
 }
 
-func (me *Cursor) At(file *token.File) int {
-	end := me.Pos()
+func (c *Cursor) At(file *token.File) int {
+	end := c.Pos()
 	if end == 0 {
 		return file.Size() - 1
 	}
-	return file.Offset(me.Pos())
+	return file.Offset(c.Pos())
 }
 
-func (me *Cursor) Pos() token.Pos     { return me.pos }
-func (me *Cursor) Token() token.Token { return me.tok }
-func (me *Cursor) Lit() string        { return me.lit }
+func (c *Cursor) Pos() token.Pos     { return c.pos }
+func (c *Cursor) Token() token.Token { return c.tok }
+func (c *Cursor) Lit() string        { return c.lit }
+
+func (c *Cursor) InsideParen() bool { return c.paren > 0 }
+func (c *Cursor) InsideBrace() bool { return c.brace > 0 }
 
 func (c *Cursor) scanSignature() token.Pos {
 	for c.Next() {
@@ -50,6 +55,7 @@ func (c *Cursor) scanSignature() token.Pos {
 	}
 	return c.Pos()
 }
+
 func (c *Cursor) scanParenBlock() token.Pos {
 	for c.Next() {
 		if c.Token() == token.SEMICOLON && !c.InsideParen() {
@@ -77,18 +83,15 @@ func (c *Cursor) scanBlockEnd() token.Pos {
 	return c.Pos()
 }
 
-func (me *Cursor) feed(tok token.Token) {
+func (c *Cursor) feed(tok token.Token) {
 	switch tok {
 	case token.LPAREN:
-		me.paren++
+		c.paren++
 	case token.RPAREN:
-		me.paren--
+		c.paren--
 	case token.LBRACE:
-		me.brace++
+		c.brace++
 	case token.RBRACE:
-		me.brace--
+		c.brace--
 	}
 }
-
-func (me *Cursor) InsideParen() bool { return me.paren > 0 }
-func (me *Cursor) InsideBrace() bool { return me.brace > 0 }

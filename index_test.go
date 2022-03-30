@@ -1,4 +1,4 @@
-package gosort
+package goindex
 
 import (
 	"bytes"

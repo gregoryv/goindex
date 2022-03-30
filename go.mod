@@ -1,4 +1,4 @@
-module github.com/gregoryv/gosort
+module github.com/gregoryv/goindex
 
 go 1.17
 

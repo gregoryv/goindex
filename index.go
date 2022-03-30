@@ -34,11 +34,7 @@ func Index(src []byte) []Section {
 			}
 			c.scanBlockStart()
 			c.scanBlockEnd()
-			end := c.Pos()
-			if end == 0 {
-				panic("missing block end")
-			}
-			to := file.Offset(end) + 1
+			to := c.At(file) + 1
 			sections = append(sections, &typeSect{
 				span: span{
 					from: from,
@@ -52,11 +48,7 @@ func Index(src []byte) []Section {
 			c.scanSignature()
 			c.scanBlockStart()
 			c.scanBlockEnd()
-			end := c.Pos()
-			if end == 0 {
-				panic("missing block end")
-			}
-			to := file.Offset(end) + 1
+			to := c.At(file) + 1
 			sections = append(sections, &funcSect{
 				span: span{
 					from: from,
@@ -68,7 +60,7 @@ func Index(src []byte) []Section {
 			from = -1
 		}
 	}
-	// insert the first section if it's unspecified
+	// insert missing sections
 	res := make([]Section, 0)
 	var to int
 	for _, s := range sections {
@@ -154,6 +146,14 @@ func (me *Cursor) Next() bool {
 	me.feed(tok)
 
 	return tok != token.EOF
+}
+
+func (me *Cursor) At(file *token.File) int {
+	end := me.Pos()
+	if end == 0 {
+		return file.Size() - 1
+	}
+	return file.Offset(me.Pos())
 }
 
 func (me *Cursor) Pos() token.Pos     { return me.pos }

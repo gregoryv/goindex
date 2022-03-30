@@ -63,17 +63,39 @@ func Index(src []byte) []Section {
 	}
 	// insert missing sections
 	res := make([]Section, 0)
-	var to int
-	for _, s := range sections {
-		if to < s.From() {
-			res = append(res, newOtherSect(to, s.From(), src))
-			to = s.To()
-		}
-		res = append(res, s)
+	if len(sections) == 0 {
+		return res
 	}
-	last := res[len(res)-1]
+	first := sections[0]
+	other := newOther(0, first.From(), src)
+	if other.IsEmpty(src) {
+		sections[0].from = 0
+	} else {
+		res = append(res, other)
+	}
+
+	for i := 0; i < len(sections)-1; i++ {
+		a := sections[i]
+		b := sections[i+1]
+		c := newOther(a.To(), b.From(), src) // between
+		if c.IsEmpty(src) {
+			a.to = b.from
+			res = append(res, a)
+		} else {
+			res = append(res, a, c)
+		}
+	}
+
+	last := sections[len(sections)-1]
+	res = append(res, last)
+
 	if last.To() != len(src) {
-		res = append(res, newOtherSect(last.To(), len(src), src))
+		other := newOther(last.To(), len(src), src)
+		if other.IsEmpty(src) {
+			res[len(res)-1].to = len(src)
+		} else {
+			res = append(res, other)
+		}
 	}
 
 	return res
@@ -85,7 +107,7 @@ func newImport(from, to int) Section {
 	return newSection(from, to, "import")
 }
 
-func newOtherSect(from, to int, src []byte) Section {
+func newOther(from, to int, src []byte) Section {
 	part := bytes.TrimSpace(src[from:to])
 	i := bytes.Index(part, []byte("\n"))
 	var label string
@@ -115,6 +137,10 @@ func (me *Section) String() string         { return me.label }
 func (me *Section) From() int              { return me.from }
 func (me *Section) To() int                { return me.to }
 func (me *Section) Grab(src []byte) []byte { return src[me.from:me.to] }
+func (me *Section) IsEmpty(src []byte) bool {
+	v := bytes.TrimSpace(me.Grab(src))
+	return len(v) == 0
+}
 
 // ----------------------------------------
 

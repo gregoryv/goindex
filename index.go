@@ -6,6 +6,12 @@ import (
 	"go/token"
 )
 
+// Index parses the given go source into sections. A section can be
+// - comment
+// - import
+// - type
+// - func
+// If a comment is coupled to e.g. a func it's included in that section.
 func Index(src []byte) []Section {
 	var s scanner.Scanner
 	fset := token.NewFileSet()

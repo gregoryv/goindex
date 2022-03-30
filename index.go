@@ -54,32 +54,13 @@ func Index(src []byte) []Section {
 			if from == -1 { // no related comment
 				from = file.Offset(pos)
 			}
-			c.Next()
-			var name string
-			if c.Token() == token.LPAREN {
-				// skip the receiver
-				for c.Next() {
-					if c.Token() == token.RPAREN {
-						break
-					}
-				}
-				c.Next()
-				if c.Token() == token.IDENT {
-					name = c.Lit()
-				}
-
-			} else {
-				if c.Token() == token.IDENT {
-					name = c.Lit()
-				}
-			}
-			c.scanSignature()
 			c.scanBlockStart()
+			label := string(src[file.Offset(pos):file.Offset(c.Pos())])
 			c.scanBlockEnd()
 			to := c.At(file) + 1
 			sections = append(sections, &funcSect{
-				span: span{from: from, to: to},
-				name: name,
+				span:  span{from: from, to: to},
+				label: label,
 			})
 		}
 		if c.Token() != token.COMMENT {
@@ -134,10 +115,10 @@ func (me *typeSect) String() string {
 type funcSect struct {
 	span
 
-	name string
+	label string
 }
 
-func (me *funcSect) String() string { return "func " + me.name }
+func (me *funcSect) String() string { return me.label }
 
 // ----------------------------------------
 

@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -10,7 +11,24 @@ import (
 )
 
 func main() {
+	flag.Usage = func() {
+		w := flag.CommandLine.Output()
+		fmt.Fprintf(w, "Usage: %s\n", os.Args[0])
+		fmt.Fprint(w, `
+grab command reads input i the form
+
+FILE1 FROM TO
+FILE1 FROM TO
+FILE2 FROM TO
+
+and writes out the sections from those files to stdout.
+
+FROM and TO are the byte index in each file.
+`)
+		flag.PrintDefaults()
+	}
 	flag.Parse()
+
 	s := bufio.NewScanner(os.Stdin)
 	var g Grabber
 	for s.Scan() {

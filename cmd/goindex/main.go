@@ -1,3 +1,4 @@
+// Command goindex indexes a go source file into sections
 package main
 
 import (

@@ -1,3 +1,4 @@
+// Command grab extracts sections from a file by byte range
 package main
 
 import (

@@ -1,7 +1,9 @@
 goindex - Package for indexing go files
 
 This module provides tools to manipulate go source files by indexing
-and extracting sections of code.
+and extracting sections of code. This is useful when you are dealing
+with large files and want to extract type related sections into a
+separate file.
 
 ![](goindex.gif)
 

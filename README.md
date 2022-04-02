@@ -7,8 +7,7 @@ and extracting sections of code.
 
 ## Quick start
 
-    $ go install github.com/gregoryv/goindex/cmd/goindex@latest
-    $ go install github.com/gregoryv/goindex/cmd/gograb@latest	
+    $ go install github.com/gregoryv/goindex/cmd/...@latest
 	
 Index contents of a go file
 
@@ -26,7 +25,7 @@ Index contents of a go file
 Grab Boat related sections
 
 ```shell
-$ goindex complex.go | grep Boat | gograb
+$ goindex complex.go | grep Boat | grab
 func NewBoat() *Boat {
         return &Boat{}
 }

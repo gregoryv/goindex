@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -30,12 +31,20 @@ FROM and TO are the byte index in each file.
 	}
 	flag.Parse()
 
+	log.SetFlags(0)
+
 	s := bufio.NewScanner(os.Stdin)
 	var g Grabber
 	for s.Scan() {
 		line := s.Text()
 		f := strings.Fields(line)
-		g.Grab(os.Stdout, f[0], f[1], f[2])
+		if len(f) != 3 {
+			log.Println(line)
+			log.Fatal("line should be: FILE FROM TO")
+		}
+		if err := g.Grab(os.Stdout, f[0], f[1], f[2]); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 

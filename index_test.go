@@ -9,6 +9,18 @@ import (
 	"github.com/gregoryv/golden"
 )
 
+func ExampleSection_Grab() {
+	src := []byte(`package x
+// Greet returns a greeting
+func Greet() string { return "hello" }`)
+
+	sections := Index(src)
+	os.Stdout.Write(sections[1].Grab(src))
+	//output:
+	// // Greet returns a greeting
+	// func Greet() string { return "hello" }
+}
+
 func TestIndex(t *testing.T) {
 	src, err := os.ReadFile("testdata/complex.go")
 	if err != nil {

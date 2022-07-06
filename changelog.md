@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on http://keepachangelog.com/en/1.0.0/
 and this project adheres to http://semver.org/spec/v2.0.0.html.
 
+## [unreleased]
+
+- Add example test of Section.Grab
+
 ## [0.3.0] - 2022-04-02
 
 - Rename cmd/gograb to cmd/grab, its not specific to Go files

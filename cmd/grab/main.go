@@ -38,7 +38,7 @@ FROM and TO are the byte index in each file.
 	for s.Scan() {
 		line := s.Text()
 		f := strings.Fields(line)
-		if len(f) != 3 {
+		if len(f) < 3 {
 			log.Println(line)
 			log.Fatal("line should be: FILE FROM TO")
 		}

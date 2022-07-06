@@ -22,22 +22,29 @@ func Index(src []byte) []Section {
 	sections := make([]Section, 0)
 
 	var from int
+	var lastTok token.Token
 	for c.Next() {
 		pos := c.Pos()
-		switch c.Token() {
+		tok := c.Token()
+		switch tok {
 		case token.COMMENT:
-			// todo fix multiline func comments
+			if lastTok == tok {
+				continue // multiline comment
+			}
 			from = file.Offset(pos) // and position to include in func blocks
 			l := len(c.Lit())
-			end := from + l + 5
+			// check if this comment is related to a func or type
+			end := from + l + 5 // newline + 4 bytes = 5
 			if end >= len(src) {
 				end = len(src)
 			}
-			prefix := string(src[from+l+1 : end]) // if related it's either func or type
-			//fmt.Printf("l=%v %q\n", l, prefix)
-			if prefix != "func" {
+			v := string(src[from+l+1 : end]) // if related it's either func or type
+			switch v {
+			case "func", "type":
+			default:
 				from = -1
 			}
+			//fmt.Printf("l=%v %q\n", l, v)
 
 		case token.IMPORT:
 			if from == -1 { // no related comment
@@ -74,6 +81,7 @@ func Index(src []byte) []Section {
 		if c.Token() != token.COMMENT {
 			from = -1
 		}
+		lastTok = tok
 	}
 	// insert missing sections
 	res := make([]Section, 0)

@@ -8,11 +8,14 @@ func NewBoat() *Boat {
 	return &Boat{}
 }
 
+// Type comment
+// second line
 type Boat struct {
 	model string
 }
 
 // Func comment
+// second line
 func (me *Boat) Model() string {
 	if me.model == "" {
 		return fmt.Sprintf("%s", "unknown")

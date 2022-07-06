@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Fix multiline func and type comments
 - Add example test of Section.Grab
 
 ## [0.3.0] - 2022-04-02

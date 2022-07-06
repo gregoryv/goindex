@@ -76,6 +76,22 @@ func TestIndex(t *testing.T) {
 			}
 		}
 	})
+	t.Run("multiline type comment", func(t *testing.T) {
+		s := sections[4]
+		got := string(s.Grab(src))
+		if !strings.Contains(got, "second line") {
+			t.Log(s.String())
+			t.Error("missing second line")
+		}
+	})
+	t.Run("multiline func comment", func(t *testing.T) {
+		s := sections[6]
+		got := string(s.Grab(src))
+		if !strings.Contains(got, "second line") {
+			t.Log(s.String())
+			t.Error("missing second line")
+		}
+	})
 
 	t.Run("equals", func(t *testing.T) {
 		var buf bytes.Buffer

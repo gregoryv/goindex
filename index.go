@@ -27,6 +27,7 @@ func Index(src []byte) []Section {
 		pos := c.Pos()
 		switch c.Token() {
 		case token.COMMENT:
+			// todo fix multiline func comments
 			from = file.Offset(pos) // and position to include in func blocks
 			l := len(c.Lit())
 			end := from + l + 5
@@ -144,16 +145,28 @@ func newSection(from, to int, label string) Section {
 	}
 }
 
+// Section defines a section within a Go source file
 type Section struct {
 	from, to int
 
 	label string
 }
 
-func (me *Section) String() string         { return me.label }
-func (me *Section) From() int              { return me.from }
-func (me *Section) To() int                { return me.to }
+// String returns short value of this section, e.g. for funcs only the
+// signature
+func (me *Section) String() string { return me.label }
+
+// From returns the starting position of this section
+func (me *Section) From() int { return me.from }
+
+// To returns the end position of this section
+func (me *Section) To() int { return me.to }
+
+// Grab returns the the sections src[From:To]
 func (me *Section) Grab(src []byte) []byte { return src[me.from:me.to] }
+
+// IsEmpty returns true if the sections has no characters after
+// bytes.TrimSpace has been applied.
 func (me *Section) IsEmpty(src []byte) bool {
 	v := bytes.TrimSpace(me.Grab(src))
 	return len(v) == 0

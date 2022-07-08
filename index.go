@@ -32,23 +32,33 @@ func Index(src []byte) []Section {
 			if from != -1 {
 				continue // multiline comment
 			}
-			from = file.Offset(pos) // and position to include in func blocks
+			// save position incase it's a related block comment
+			from = file.Offset(pos)
 
+			// single line comments come separately, check if there
+			// are more
 			if len(lit) > 2 && lit[:2] == "//" {
 				continue
 			}
 		}
-		// check if next line is empty, then this is a free comment
+
+		// if comment blocks are followed by empty line, add them as
+		// decoupled sections
 		if tok != token.COMMENT && from != -1 {
 			to := c.At(file) - 2
 			if to > 0 && src[to] == '\n' {
 				sections = append(sections, newOther(from, to, src))
+				from = -1
 			}
 		}
 
 		if from == -1 { // no related comment
 			from = file.Offset(pos)
 		}
+		// all cases here should scan the complete block and add a
+		// section. Only interesting sections are added here, other
+		// such as blocks of constants or variables are later filled
+		// in as other sections.
 		switch tok {
 		case token.IMPORT:
 			c.scanParenBlock()
@@ -81,7 +91,8 @@ func Index(src []byte) []Section {
 		sections = append(sections, newOther(from, len(src), src))
 	}
 
-	// insert missing sections
+	// insert missing sections, such as blocks of global const or var
+	// declarations
 	res := make([]Section, 0)
 	if len(sections) == 0 {
 		res = append(res, newOther(0, len(src), src))

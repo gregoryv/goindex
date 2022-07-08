@@ -3,6 +3,7 @@ package testdata
 import "fmt"
 
 // Decoupled comment
+// second line
 
 func NewBoat() *Boat {
 	return &Boat{}

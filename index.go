@@ -17,47 +17,45 @@ func Index(src []byte) []Section {
 	file := fset.AddFile("", fset.Base(), len(src))
 	s.Init(file, src, nil, scanner.ScanComments)
 
-	c := NewCursor(&s)
+	var (
+		c        = NewCursor(&s)
+		sections = make([]Section, 0)
+		from     int // sections start position within src
+	)
 
-	sections := make([]Section, 0)
-
-	var from int
-	var lastTok token.Token
 	for c.Next() {
 		pos := c.Pos()
 		tok := c.Token()
-		switch tok {
-		case token.COMMENT:
-			if lastTok == tok {
+		lit := c.Lit()
+
+		if tok == token.COMMENT {
+			if from != -1 {
 				continue // multiline comment
 			}
 			from = file.Offset(pos) // and position to include in func blocks
-			l := len(c.Lit())
-			// check if this comment is related to a func or type
-			end := from + l + 5 // newline + 4 bytes = 5
-			if end >= len(src) {
-				end = len(src)
-			}
-			v := string(src[from+l+1 : end]) // if related it's either func or type
-			switch v {
-			case "func", "type":
-			default:
-				from = -1
-			}
-			//fmt.Printf("l=%v %q\n", l, v)
 
-		case token.IMPORT:
-			if from == -1 { // no related comment
-				from = file.Offset(pos)
+			if len(lit) > 2 && lit[:2] == "//" {
+				continue
 			}
+		}
+		// check if next line is empty, then this is a free comment
+		if tok != token.COMMENT && from != -1 {
+			to := c.At(file) - 2
+			if to > 0 && src[to] == '\n' {
+				sections = append(sections, newOther(from, to, src))
+			}
+		}
+
+		if from == -1 { // no related comment
+			from = file.Offset(pos)
+		}
+		switch tok {
+		case token.IMPORT:
 			c.scanParenBlock()
 			to := c.At(file) + 1
 			sections = append(sections, newImport(from, to))
 
 		case token.TYPE:
-			if from == -1 { // no related comment
-				from = file.Offset(pos)
-			}
 			c.scanBlockStart()
 			label := string(src[file.Offset(pos):file.Offset(c.Pos())])
 			c.scanBlockEnd()
@@ -65,10 +63,6 @@ func Index(src []byte) []Section {
 			sections = append(sections, newSection(from, to, label))
 
 		case token.FUNC:
-			if from == -1 { // no related comment
-				from = file.Offset(pos)
-			}
-
 			// Fixme: func extra(), ie. no body
 			// See https://go.dev/ref/spec#Function_declarations
 
@@ -81,11 +75,16 @@ func Index(src []byte) []Section {
 		if c.Token() != token.COMMENT {
 			from = -1
 		}
-		lastTok = tok
 	}
+	// add any ending comments as their own block
+	if from > -1 {
+		sections = append(sections, newOther(from, len(src), src))
+	}
+
 	// insert missing sections
 	res := make([]Section, 0)
 	if len(sections) == 0 {
+		res = append(res, newOther(0, len(src), src))
 		return res
 	}
 	first := sections[0]

@@ -6,6 +6,8 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Fix broken section indexing, where related comments where considered
+  decoupled
 - cmd/grab fails on bad input
 
 ## [0.3.1] - 2022-07-06

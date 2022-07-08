@@ -1,15 +1,12 @@
 package goindex
 
 import (
-	"bytes"
+	"fmt"
 	"os"
-	"strings"
 	"testing"
-
-	"github.com/gregoryv/golden"
 )
 
-func ExampleSection_Grab() {
+func xExampleSection_Grab() {
 	src := []byte(`package x
 // Greet returns a greeting
 func Greet() string { return "hello" }`)
@@ -22,83 +19,131 @@ func Greet() string { return "hello" }`)
 }
 
 func TestIndex(t *testing.T) {
-	src, err := os.ReadFile("testdata/complex.go")
-	if err != nil {
-		t.Fatal(err)
-	}
-	sections := Index(src)
+	cases := []struct {
+		name   string
+		expLen int // number of sections
+		src    string
+	}{
+		{
+			expLen: 1,
+			src:    `package x`,
+		},
+		{
+			name:   "almost empty",
+			expLen: 2,
+			src: `package x
 
-	t.Run("decoupled comment", func(t *testing.T) {
-		for _, s := range sections {
-			var buf bytes.Buffer
-			buf.Write(src[s.From():s.To()])
-			got := buf.String()
-			if strings.Contains(got, "Decoupled comment") {
-				if strings.Contains(got, "func") || strings.Contains(got, "type") {
-					t.Log(got)
-					t.Error("contains unrelated comment")
+// one comment`,
+		},
+		{
+			expLen: 2,
+			src: `package x
+
+// String returns ...
+func String() string { return "v" }`,
+		},
+
+		{
+			expLen: 3,
+			src: `package x
+
+import _ "embed"
+
+// String returns ...
+func String() string { return "v" }`,
+		},
+		{
+			expLen: 4,
+			src: `package testdata
+
+import "fmt"
+
+// Decoupled comment
+// second line
+
+func NewBoat() *Boat {
+        return &Boat{}
+}
+`,
+		},
+		{
+			expLen: 5,
+			src: `package testdata
+
+import "fmt"
+
+// Decoupled comment
+// second line
+
+func NewBoat() *Boat {
+        return &Boat{}
+}
+
+// Type comment
+// second line
+type Boat struct {
+        model string
+}
+`,
+		},
+		{
+			expLen: 6,
+			src: `package testdata
+
+import "fmt"
+
+// Decoupled comment
+// second line
+
+func NewBoat() *Boat {
+        return &Boat{}
+}
+
+// Type comment
+// second line
+type Boat struct {
+        model string
+}
+
+// Func comment
+// second line
+func (me *Boat) Model() string {
+        if me.model == "" {
+                return fmt.Sprintf("%s", "unknown")
+        }
+        // Inline comment
+        return me.model
+}
+`,
+		},
+		{
+			expLen: 4,
+			src: `package testdata
+
+import "fmt"
+
+func DoSomething(v interface{ X() }) (interface{ S() int }, error) {
+        return nil, nil
+}
+
+// Decoupled comment
+`,
+		},
+	}
+	for _, c := range cases { // todo use all
+		t.Run(c.name, func(t *testing.T) {
+			s := Index([]byte(c.src))
+			if got := len(s); got != c.expLen {
+				t.Errorf(fmt.Sprintf(`
+--------------------------------------------
+%s
+--------------------------------------------
+got %v sections, expected %v
+`, c.src, got, c.expLen))
+				for i, s := range s {
+					t.Logf("%v) %q", i+1, s.Grab([]byte(c.src)))
 				}
 			}
-		}
-	})
-
-	t.Run("related comment", func(t *testing.T) {
-		var buf bytes.Buffer
-		for _, s := range sections {
-			buf.Write(src[s.From():s.To()])
-		}
-		got := buf.String()
-		if !strings.Contains(got, "Func comment") {
-			t.Log(got)
-			t.Error("missing related comment")
-		}
-	})
-
-	t.Run("starts from 0", func(t *testing.T) {
-		if got := sections[0].From(); got != 0 {
-			t.Error(got)
-		}
-	})
-
-	t.Run("ends with src len", func(t *testing.T) {
-		exp := len(src)
-		if got := sections[len(sections)-1].To(); got != exp {
-			t.Error(got, "expected", exp)
-		}
-	})
-
-	t.Run("sections are complete", func(t *testing.T) {
-		for i, s := range sections[:len(sections)-1] {
-			next := sections[i+1]
-			t.Log(s.To(), next.From())
-			if s.To() != next.From() {
-				t.Errorf("missing section between %v and %v", i, i+1)
-			}
-		}
-	})
-	t.Run("multiline type comment", func(t *testing.T) {
-		s := sections[4]
-		got := string(s.Grab(src))
-		if !strings.Contains(got, "second line") {
-			t.Log(s.String())
-			t.Error("missing second line")
-		}
-	})
-	t.Run("multiline func comment", func(t *testing.T) {
-		s := sections[6]
-		got := string(s.Grab(src))
-		if !strings.Contains(got, "second line") {
-			t.Log(s.String())
-			t.Error("missing second line")
-		}
-	})
-
-	t.Run("equals", func(t *testing.T) {
-		var buf bytes.Buffer
-		for _, s := range sections {
-			buf.Write(src[s.From():s.To()])
-		}
-		got, exp := buf.String(), string(src)
-		golden.AssertEquals(t, got, exp)
-	})
+		})
+	}
 }

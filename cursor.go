@@ -13,8 +13,8 @@ func NewCursor(s *scanner.Scanner) *Cursor {
 
 type Cursor struct {
 	s   *scanner.Scanner
-	tok token.Token
 	pos token.Pos
+	tok token.Token
 	lit string
 
 	paren int
@@ -23,13 +23,9 @@ type Cursor struct {
 
 // Next returns true  until token.EOF is found
 func (c *Cursor) Next() bool {
-	pos, tok, lit := c.s.Scan()
-	c.tok = tok
-	c.pos = pos
-	c.lit = lit
-	c.feed(tok)
-
-	return tok != token.EOF
+	c.pos, c.tok, c.lit = c.s.Scan()
+	c.feed(c.tok)
+	return c.tok != token.EOF
 }
 
 func (c *Cursor) At(file *token.File) int {
@@ -47,13 +43,19 @@ func (c *Cursor) Lit() string        { return c.lit }
 func (c *Cursor) InsideParen() bool { return c.paren > 0 }
 func (c *Cursor) InsideBrace() bool { return c.brace > 0 }
 
-func (c *Cursor) scanSignature() token.Pos {
-	for c.Next() {
-		if !c.InsideParen() {
-			break
-		}
+// feed updates cursor logic, eg. inside or outside {} or () blocks
+// See InsideParen() and InsideBrace()
+func (c *Cursor) feed(tok token.Token) {
+	switch tok {
+	case token.LPAREN:
+		c.paren++
+	case token.RPAREN:
+		c.paren--
+	case token.LBRACE:
+		c.brace++
+	case token.RBRACE:
+		c.brace--
 	}
-	return c.Pos()
 }
 
 func (c *Cursor) scanParenBlock() token.Pos {
@@ -81,17 +83,4 @@ func (c *Cursor) scanBlockEnd() token.Pos {
 		}
 	}
 	return c.Pos()
-}
-
-func (c *Cursor) feed(tok token.Token) {
-	switch tok {
-	case token.LPAREN:
-		c.paren++
-	case token.RPAREN:
-		c.paren--
-	case token.LBRACE:
-		c.brace++
-	case token.RBRACE:
-		c.brace--
-	}
 }

@@ -24,7 +24,7 @@ Index contents of a go file
     complex.go 369 392 // Decoupled comment
 
 
-Grab Boat related sections
+then grab Boat related sections using a combination of grep and grab
 
 ```shell
 $ goindex complex.go | grep Boat | grab

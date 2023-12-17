@@ -39,6 +39,7 @@ func main() {
 
 	in := bufio.NewScanner(bytes.NewReader(data))
 	var i int
+	var lastFile string
 	for in.Scan() {
 		i++
 		line := in.Text()
@@ -50,7 +51,14 @@ func main() {
 		}
 		switch {
 		case len(args) == 0:
-			fmt.Printf("%v %s %s\n", i, part[0], part[4])
+			if part[0] != lastFile {
+				if i > 1 {
+					fmt.Println()
+				}
+				lastFile = part[0]
+				fmt.Println(lastFile)
+			}
+			fmt.Printf("%v %s\n", i, part[4])
 
 		case index[i]:
 			exec.Command("emacsclient", "-n", "+"+part[3], part[0]).Run()

@@ -31,10 +31,14 @@ func newSection(from, to int, label string) Section {
 
 // Section defines a section within a Go source file
 type Section struct {
-	from, to int
+	line, from, to int
 
 	label string
 }
+
+// Line returns the line where this section starts. Lines begin with
+// number 1.
+func (me *Section) Line() int { return me.line }
 
 // String returns short value of this section, e.g. for funcs only the
 // signature

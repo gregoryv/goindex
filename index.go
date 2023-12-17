@@ -1,6 +1,7 @@
 package goindex
 
 import (
+	"bytes"
 	"go/scanner"
 	"go/token"
 )
@@ -63,14 +64,18 @@ func Index(src []byte) []Section {
 		case token.IMPORT:
 			c.scanParenBlock()
 			to := c.At(file) + 1
-			sections = append(sections, newImport(from, to))
+			s := newImport(from, to)
+			s.line = bytes.Count(src[:file.Offset(pos)], newLine) + 1
+			sections = append(sections, s)
 
 		case token.TYPE:
 			c.scanBlockStart()
 			label := string(src[file.Offset(pos):file.Offset(c.Pos())])
 			c.scanBlockEnd()
 			to := c.At(file) + 1
-			sections = append(sections, newSection(from, to, label))
+			s := newSection(from, to, label)
+			s.line = bytes.Count(src[:file.Offset(pos)], newLine) + 1
+			sections = append(sections, s)
 
 		case token.FUNC:
 			// Fixme: func extra(), ie. no body
@@ -80,7 +85,9 @@ func Index(src []byte) []Section {
 			label := string(src[file.Offset(pos):file.Offset(c.Pos())])
 			c.scanBlockEnd()
 			to := c.At(file) + 1
-			sections = append(sections, newSection(from, to, label))
+			s := newSection(from, to, label)
+			s.line = bytes.Count(src[:file.Offset(pos)], newLine) + 1
+			sections = append(sections, s)
 		}
 		if c.Token() != token.COMMENT {
 			from = -1
@@ -132,3 +139,5 @@ func Index(src []byte) []Section {
 
 	return res
 }
+
+var newLine = []byte("\n")

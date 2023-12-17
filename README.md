@@ -37,11 +37,11 @@ type Boat struct {
 }
 
 // Func comment
-func (me *Boat) Model() string {
-        if me.model == "" {
+func (b *Boat) Model() string {
+        if b.model == "" {
                 return fmt.Sprintf("%s", "unknown")
         }
         // Inline comment
-        return me.model
+        return b.model
 }
 ```	

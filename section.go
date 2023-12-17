@@ -38,24 +38,24 @@ type Section struct {
 
 // Line returns the line where this section starts. Lines begin with
 // number 1.
-func (me *Section) Line() int { return me.line }
+func (s *Section) Line() int { return s.line }
 
 // String returns short value of this section, e.g. for funcs only the
 // signature
-func (me *Section) String() string { return me.label }
+func (s *Section) String() string { return s.label }
 
 // From returns the starting position of this section
-func (me *Section) From() int { return me.from }
+func (s *Section) From() int { return s.from }
 
 // To returns the end position of this section
-func (me *Section) To() int { return me.to }
+func (s *Section) To() int { return s.to }
 
 // Grab returns the the sections src[From:To]
-func (me *Section) Grab(src []byte) []byte { return src[me.from:me.to] }
+func (s *Section) Grab(src []byte) []byte { return src[s.from:s.to] }
 
 // IsEmpty returns true if the sections has no characters after
 // bytes.TrimSpace has been applied.
-func (me *Section) IsEmpty(src []byte) bool {
-	v := bytes.TrimSpace(me.Grab(src))
+func (s *Section) IsEmpty(src []byte) bool {
+	v := bytes.TrimSpace(s.Grab(src))
 	return len(v) == 0
 }

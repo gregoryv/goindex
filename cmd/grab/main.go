@@ -53,14 +53,14 @@ type Grabber struct {
 	src      []byte
 }
 
-func (me *Grabber) Grab(w io.Writer, filename, sfrom, sto string) error {
-	if me.filename != filename {
+func (g *Grabber) Grab(w io.Writer, filename, sfrom, sto string) error {
+	if g.filename != filename {
 		src, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
-		me.src = src
-		me.filename = filename
+		g.src = src
+		g.filename = filename
 	}
 	from, err := strconv.Atoi(sfrom)
 	if err != nil {
@@ -70,6 +70,6 @@ func (me *Grabber) Grab(w io.Writer, filename, sfrom, sto string) error {
 	if err != nil {
 		return err
 	}
-	w.Write(me.src[from:to])
+	w.Write(g.src[from:to])
 	return nil
 }

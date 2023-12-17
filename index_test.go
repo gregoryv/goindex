@@ -6,6 +6,19 @@ import (
 	"testing"
 )
 
+func ExampleIndex() {
+	src := []byte(`package x
+// Greet returns a greeting
+func Greet() string { return "hello" }`)
+
+	for _, s := range Index(src) {
+		fmt.Println(s.String())
+	}
+	// output:
+	// 0 10 1 package x
+	// 10 76 3 func Greet() string
+}
+
 func ExampleSection_Grab() {
 	src := []byte(`package x
 // Greet returns a greeting

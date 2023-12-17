@@ -1,6 +1,9 @@
 package goindex
 
-import "bytes"
+import (
+	"bytes"
+	"fmt"
+)
 
 func newImport(from, to int) Section {
 	return newSection(from, to, "import")
@@ -40,9 +43,13 @@ type Section struct {
 // number 1.
 func (s *Section) Line() int { return s.line }
 
-// String returns short value of this section, e.g. for funcs only the
+// Label returns short value of this section, e.g. for funcs only the
 // signature
-func (s *Section) String() string { return s.label }
+func (s *Section) Label() string { return s.label }
+
+func (s *Section) String() string {
+	return fmt.Sprint(s.From(), s.To(), s.Line(), " ", s.Label())
+}
 
 // From returns the starting position of this section
 func (s *Section) From() int { return s.from }

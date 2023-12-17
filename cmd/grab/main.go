@@ -14,7 +14,7 @@ import (
 
 func main() {
 	flag.Usage = func() {
-		w := flag.CommandLine.Output()
+		w := os.Stderr
 		fmt.Fprintf(w, "Usage: %s\n", os.Args[0])
 		fmt.Fprint(w, `
 grab command reads input i the form

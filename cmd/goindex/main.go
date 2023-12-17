@@ -26,7 +26,7 @@ func main() {
 		}
 		sections := goindex.Index(src)
 		for _, s := range sections {
-			fmt.Printf("%s %v %v %s\n", filename, s.From(), s.To(), s.String())
+			fmt.Printf("%s %v %v %v %s\n", filename, s.From(), s.To(), s.Line(), s.String())
 		}
 	}
 }

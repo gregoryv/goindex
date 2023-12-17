@@ -2,6 +2,7 @@ package goindex
 
 import (
 	"bytes"
+	"fmt"
 	"go/scanner"
 	"go/token"
 )
@@ -48,7 +49,9 @@ func Index(src []byte) []Section {
 		if tok != token.COMMENT && from != -1 {
 			to := c.At(file) - 2
 			if to > 0 && src[to] == '\n' {
-				sections = append(sections, newOther(from, to, src))
+				s := newOther(from, to, src)
+				s.line = bytes.Count(src[:from], newLine) + 1
+				sections = append(sections, s)
 				from = -1
 			}
 		}
@@ -102,14 +105,18 @@ func Index(src []byte) []Section {
 	// declarations
 	res := make([]Section, 0)
 	if len(sections) == 0 {
-		res = append(res, newOther(0, len(src), src))
+		s := newOther(0, len(src), src)
+		s.line = 1
+		res = append(res, s)
 		return res
 	}
 	first := sections[0]
 	other := newOther(0, first.From(), src)
 	if other.IsEmpty(src) {
 		sections[0].from = 0
+		sections[0].line = 1
 	} else {
+		other.line = 1
 		res = append(res, other)
 	}
 
@@ -119,8 +126,12 @@ func Index(src []byte) []Section {
 		c := newOther(a.To(), b.From(), src) // between
 		if c.IsEmpty(src) {
 			a.to = b.from
+			if a.line == 0 {
+				fmt.Println("HERE")
+			}
 			res = append(res, a)
 		} else {
+			c.line = bytes.Count(src[:a.To()], newLine) + 1
 			res = append(res, a, c)
 		}
 	}
@@ -133,10 +144,14 @@ func Index(src []byte) []Section {
 		if other.IsEmpty(src) {
 			res[len(res)-1].to = len(src)
 		} else {
+			other.line = bytes.Count(src[:last.To()], newLine) + 1
 			res = append(res, other)
 		}
 	}
 
+	if i := len(res) - 1; res[i].line == 0 {
+		res[i].line = bytes.Count(src[:res[i].From()], newLine) + 1
+	}
 	return res
 }
 

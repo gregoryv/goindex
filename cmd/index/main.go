@@ -20,7 +20,7 @@ func main() {
 
 	for _, filename := range flag.Args() {
 		ext := filepath.Ext(filename)
-		switch ext  {
+		switch ext {
 		case ".go":
 			if *verbose {
 				fmt.Fprintln(os.Stderr, "parse", filename, ext)

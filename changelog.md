@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Command cmd/gotoi colors output
 - Rename cmd/goindex to cmd/index
 
 ## [0.4.0] - 2023-12-17

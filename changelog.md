@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add cmd/goto for opening emacs
 - Command goindex outputs starting line
 
 ## [0.3.2] - 2022-07-08

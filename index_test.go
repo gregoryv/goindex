@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func xExampleSection_Grab() {
+func ExampleSection_Grab() {
 	src := []byte(`package x
 // Greet returns a greeting
 func Greet() string { return "hello" }`)

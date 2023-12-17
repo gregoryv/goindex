@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Add cmd/gotoi for listing and opening emacs by index
 - Add cmd/goto for opening emacs
 - Command goindex outputs starting line
 

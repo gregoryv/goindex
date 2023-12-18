@@ -55,7 +55,7 @@ func main() {
 		case len(args) == 0:
 			if part[0] != lastFile {
 				lastFile = part[0]
-				fmt.Print(fg.Cyan.String() +attr.Dim.String() + strings.TrimSpace(lastFile), attr.Reset, "\n")
+				fmt.Print(fg.Cyan.String()+attr.Dim.String()+strings.TrimSpace(lastFile), attr.Reset, "\n")
 			}
 			fmt.Printf("%v %s\n", i, paint(part[4]))
 
@@ -66,6 +66,7 @@ func main() {
 }
 
 func paint(v string) string {
+	var sb strings.Builder
 	first := v
 	i := strings.Index(v, " ")
 	if i > 0 {
@@ -75,15 +76,35 @@ func paint(v string) string {
 	}
 	switch first {
 	case "import":
-		return fg.Magenta.String() + first + attr.Reset.String()
+		sb.WriteString(fg.Magenta.String())
+		sb.WriteString(first)
+		sb.WriteString(attr.Reset.String())
+		return sb.String()
 
-	case "var", "const", "func", "type", "package":
-		return fg.Magenta.String() + first + attr.Reset.String() + v[i:]
+	case "func":
+		sb.WriteString(fg.Magenta.String())
+		sb.WriteString(first)
+		sb.WriteString(attr.Reset.String())
+		sb.WriteString(v[i:])
+		return sb.String()
+
+	case "var", "const", "type", "package":
+		sb.WriteString(fg.Magenta.String())
+		sb.WriteString(first)
+		sb.WriteString(attr.Reset.String())
+		sb.WriteString(v[i:])
+		return sb.String()
 
 	case "//":
-		return fg.Green.String() + attr.Dim.String() + v + attr.Reset.String()
+		sb.WriteString(fg.Green.String())
+		sb.WriteString(attr.Dim.String())
+		sb.WriteString(v)
+		sb.WriteString(attr.Reset.String())
+		return sb.String()
+
+	default:
+		return v
 	}
-	return v
 }
 
 var (

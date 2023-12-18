@@ -96,13 +96,22 @@ func paint(v string) string {
 		sb.WriteString(attr.Reset.String())
 		v = v[i:]
 		if isMethod(v[1]) {
+			// dim receiver
 			sb.WriteString(attr.Dim.String())
 			to := strings.Index(v, ")") + 1
 			sb.WriteString(v[:to])
 			sb.WriteString(attr.Reset.String())
-			sb.WriteString(v[to:])
+
+			// strip arguments and return values
+			v = v[to:]
+			from := strings.Index(v, "(")
+			sb.WriteString(v[:from])
+			sb.WriteString("()")
 		} else {
-			sb.WriteString(v)
+			from := strings.Index(v, "(")
+			sb.WriteString(v[:from])
+			sb.WriteString("()")
+
 		}
 		return sb.String()
 

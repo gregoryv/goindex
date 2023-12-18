@@ -28,14 +28,13 @@ func main() {
 	for _, a := range args {
 		i, err := strconv.Atoi(a)
 		if err != nil {
-			fmt.Fprint(os.Stderr, err)
-			os.Exit(1)
+			continue
 		}
 		index[i] = true
 	}
 	data, err := os.ReadFile(*filename)
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
@@ -79,7 +78,7 @@ func paint(v string) string {
 	switch first {
 	case "todo":
 		sb.WriteString(fg.Yellow.String())
-		sb.WriteString(first)
+		sb.WriteString(v)
 		sb.WriteString(attr.Reset.String())
 		return sb.String()
 
@@ -98,20 +97,33 @@ func paint(v string) string {
 		if isMethod(v[1]) {
 			// dim receiver
 			sb.WriteString(attr.Dim.String())
-			to := strings.Index(v, ")") + 1
+			to := strings.Index(v, ")") + 2
 			sb.WriteString(v[:to])
 			sb.WriteString(attr.Reset.String())
 
 			// strip arguments and return values
 			v = v[to:]
 			from := strings.Index(v, "(")
-			sb.WriteString(v[:from])
-			sb.WriteString("()")
+			if isLower(v[0]) {
+				sb.WriteString(attr.Dim.String())				
+				sb.WriteString(v[:from])
+				sb.WriteString("()")
+				sb.WriteString(attr.Reset.String())
+			} else {
+				sb.WriteString(v[:from])
+				sb.WriteString("()")
+			}
 		} else {
 			from := strings.Index(v, "(")
-			sb.WriteString(v[:from])
-			sb.WriteString("()")
-
+			if isLower(v[1]) {
+				sb.WriteString(attr.Dim.String())				
+				sb.WriteString(v[:from])
+				sb.WriteString("()")
+				sb.WriteString(attr.Reset.String())
+			} else {
+				sb.WriteString(v[:from])
+				sb.WriteString("()")
+			}
 		}
 		return sb.String()
 
@@ -157,6 +169,8 @@ func paint(v string) string {
 func isMethod(v byte) bool {
 	return v == '('
 }
+
+func isLower(b byte) bool { return b >= 'a' && b <= 'z' }
 
 var (
 	fg   = vt100.ForegroundColors()

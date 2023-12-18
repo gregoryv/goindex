@@ -58,7 +58,7 @@ func main() {
 				lastFile = part[0]
 				fmt.Print(fg.Cyan.String()+attr.Dim.String()+strings.TrimSpace(lastFile), attr.Reset, "\n")
 			}
-			fmt.Printf("%v %s\n", i, paint(part[4]))
+			fmt.Printf("%2v %s\n", i, paint(part[4]))
 
 		case index[i]:
 			// open entry
@@ -82,7 +82,7 @@ func paint(v string) string {
 		sb.WriteString(first)
 		sb.WriteString(attr.Reset.String())
 		return sb.String()
-		
+
 	case "import":
 		sb.WriteString(fg.Magenta.String())
 		sb.WriteString(first)
@@ -106,7 +106,27 @@ func paint(v string) string {
 		}
 		return sb.String()
 
-	case "var", "const", "type", "package":
+	case "type":
+		sb.WriteString(fg.Magenta.String())
+		sb.WriteString(attr.Dim.String())
+		sb.WriteString(first)
+		sb.WriteString(attr.Reset.String())
+		v = strings.TrimRight(v[i:], " ")
+		j := strings.LastIndex(v, " ") + 1
+		switch v[j:] {
+		case "struct", "interface":
+			sb.WriteString(v[:j])
+			sb.WriteString(fg.Magenta.String())
+			sb.WriteString(attr.Dim.String())
+			sb.WriteString(v[j:])
+			sb.WriteString(attr.Reset.String())
+
+		default:
+			sb.WriteString(v)
+		}
+		return sb.String()
+
+	case "var", "const", "package":
 		sb.WriteString(fg.Magenta.String())
 		sb.WriteString(first)
 		sb.WriteString(attr.Reset.String())

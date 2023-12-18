@@ -53,6 +53,7 @@ func main() {
 		}
 		switch {
 		case len(args) == 0:
+			// print index
 			if part[0] != lastFile {
 				lastFile = part[0]
 				fmt.Print(fg.Cyan.String()+attr.Dim.String()+strings.TrimSpace(lastFile), attr.Reset, "\n")
@@ -60,6 +61,7 @@ func main() {
 			fmt.Printf("%v %s\n", i, paint(part[4]))
 
 		case index[i]:
+			// open entry
 			exec.Command("emacsclient", "-n", "+"+part[3], part[0]).Run()
 		}
 	}
@@ -75,6 +77,12 @@ func paint(v string) string {
 		i = 0
 	}
 	switch first {
+	case "todo":
+		sb.WriteString(fg.Yellow.String())
+		sb.WriteString(first)
+		sb.WriteString(attr.Reset.String())
+		return sb.String()
+		
 	case "import":
 		sb.WriteString(fg.Magenta.String())
 		sb.WriteString(first)
@@ -83,9 +91,19 @@ func paint(v string) string {
 
 	case "func":
 		sb.WriteString(fg.Magenta.String())
+		sb.WriteString(attr.Dim.String())
 		sb.WriteString(first)
 		sb.WriteString(attr.Reset.String())
-		sb.WriteString(v[i:])
+		v = v[i:]
+		if isMethod(v[1]) {
+			sb.WriteString(attr.Dim.String())
+			to := strings.Index(v, ")") + 1
+			sb.WriteString(v[:to])
+			sb.WriteString(attr.Reset.String())
+			sb.WriteString(v[to:])
+		} else {
+			sb.WriteString(v)
+		}
 		return sb.String()
 
 	case "var", "const", "type", "package":
@@ -105,6 +123,10 @@ func paint(v string) string {
 	default:
 		return v
 	}
+}
+
+func isMethod(v byte) bool {
+	return v == '('
 }
 
 var (

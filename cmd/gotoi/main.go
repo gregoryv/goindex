@@ -53,11 +53,18 @@ func main() {
 		switch {
 		case len(args) == 0:
 			// print index
+			var filename string			
 			if part[0] != lastFile {
-				lastFile = part[0]
-				fmt.Print(fg.Cyan.String()+attr.Dim.String()+strings.TrimSpace(lastFile), attr.Reset, "\n")
+				filename = fmt.Sprint(
+					" ",
+					fg.Cyan.String(),
+					attr.Dim.String(),
+					strings.TrimSpace(part[0]),
+					attr.Reset,
+				)
+				lastFile = part[0]								
 			}
-			fmt.Printf("%2v %s\n", i, paint(part[4]))
+			fmt.Printf("%2v %s%s\n", i, paint(part[4]), filename)
 
 		case index[i]:
 			// open entry

@@ -6,6 +6,7 @@ and this project adheres to http://semver.org/spec/v2.0.0.html.
 
 ## [unreleased]
 
+- Fix incorrect index of func types
 - Command cmd/gotoi colors output
 - Rename cmd/goindex to cmd/index
 

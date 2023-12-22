@@ -136,7 +136,6 @@ func paint(v string) string {
 
 	case "type":
 		sb.WriteString(fg.Magenta.String())
-		sb.WriteString(attr.Dim.String())
 		sb.WriteString(first)
 		sb.WriteString(attr.Reset.String())
 		v = strings.TrimRight(v[i:], " ")
@@ -145,7 +144,6 @@ func paint(v string) string {
 		case "struct", "interface":
 			sb.WriteString(v[:j])
 			sb.WriteString(fg.Magenta.String())
-			sb.WriteString(attr.Dim.String())
 			sb.WriteString(v[j:])
 			sb.WriteString(attr.Reset.String())
 

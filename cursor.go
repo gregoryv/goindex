@@ -72,6 +72,9 @@ func (c *Cursor) scanBlockStart() token.Pos {
 		if c.Token() == token.LBRACE && !c.InsideParen() {
 			break
 		}
+		if c.Token() == token.SEMICOLON {
+			break
+		}
 	}
 	return c.Pos()
 }

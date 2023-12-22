@@ -49,6 +49,15 @@ func TestIndex(t *testing.T) {
 // one comment`,
 		},
 		{
+			name:   "type func",
+			expLen: 3,
+			src: `package x
+
+type f func()
+type x struct{}
+`,
+		},
+		{
 			expLen: 2,
 			src: `package x
 

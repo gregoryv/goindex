@@ -40,15 +40,14 @@ func TestIndex_generateComment(t *testing.T) {
 	}
 }
 
-func grabIs(src []byte, sections []Section) error {
-	var buf bytes.Buffer
-	for _, s := range sections {
-		buf.Write(s.Grab(src))
+func TestIndex_funcType(t *testing.T) {
+	src := []byte(`package x
+type f func()
+type x struct{}`)
+	sections := Index(src)
+	if err := grabIs(src, sections); err != nil {
+		t.Error(err)
 	}
-	if got := buf.String(); got != string(src) {
-		return fmt.Errorf("FAIL\n%s", got)
-	}
-	return nil
 }
 
 func TestIndex(t *testing.T) {
@@ -67,15 +66,6 @@ func TestIndex(t *testing.T) {
 			src: `package x
 
 // one comment`,
-		},
-		{
-			name:   "type func",
-			expLen: 3,
-			src: `package x
-
-type f func()
-type x struct{}
-`,
 		},
 		{
 			expLen: 2,
@@ -188,4 +178,15 @@ got %v sections, expected %v
 			}
 		})
 	}
+}
+
+func grabIs(src []byte, sections []Section) error {
+	var buf bytes.Buffer
+	for _, s := range sections {
+		buf.Write(s.Grab(src))
+	}
+	if got := buf.String(); got != string(src) {
+		return fmt.Errorf("FAIL\n%s", got)
+	}
+	return nil
 }

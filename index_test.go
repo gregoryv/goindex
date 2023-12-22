@@ -1,6 +1,7 @@
 package goindex
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"testing"
@@ -29,6 +30,25 @@ func Greet() string { return "hello" }`)
 	//output:
 	// // Greet returns a greeting
 	// func Greet() string { return "hello" }
+}
+
+func TestIndex_generateComment(t *testing.T) {
+	src := []byte("package x\n//go:generate ...")
+	sections := Index(src)
+	if err := grabIs(src, sections); err != nil {
+		t.Error(err)
+	}
+}
+
+func grabIs(src []byte, sections []Section) error {
+	var buf bytes.Buffer
+	for _, s := range sections {
+		buf.Write(s.Grab(src))
+	}
+	if got := buf.String(); got != string(src) {
+		return fmt.Errorf("FAIL\n%s", got)
+	}
+	return nil
 }
 
 func TestIndex(t *testing.T) {

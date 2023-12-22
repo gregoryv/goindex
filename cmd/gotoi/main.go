@@ -53,7 +53,7 @@ func main() {
 		switch {
 		case len(args) == 0:
 			// print index
-			var filename string			
+			var filename string
 			if part[0] != lastFile {
 				filename = fmt.Sprint(
 					" ",
@@ -62,7 +62,7 @@ func main() {
 					strings.TrimSpace(part[0]),
 					attr.Reset,
 				)
-				lastFile = part[0]								
+				lastFile = part[0]
 			}
 			fmt.Printf("%2v %s%s\n", i, paint(part[4]), filename)
 
@@ -112,7 +112,7 @@ func paint(v string) string {
 			v = v[to:]
 			from := strings.Index(v, "(")
 			if isLower(v[0]) {
-				sb.WriteString(attr.Dim.String())				
+				sb.WriteString(attr.Dim.String())
 				sb.WriteString(v[:from])
 				sb.WriteString("()")
 				sb.WriteString(attr.Reset.String())
@@ -123,7 +123,7 @@ func paint(v string) string {
 		} else {
 			from := strings.Index(v, "(")
 			if isLower(v[1]) {
-				sb.WriteString(attr.Dim.String())				
+				sb.WriteString(attr.Dim.String())
 				sb.WriteString(v[:from])
 				sb.WriteString("()")
 				sb.WriteString(attr.Reset.String())

@@ -162,7 +162,7 @@ func DoSomething(v interface{ X() }) (interface{ S() int }, error) {
 `,
 		},
 	}
-	for _, c := range cases { // todo use all
+	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			s := Index([]byte(c.src))
 			if got := len(s); got != c.expLen {

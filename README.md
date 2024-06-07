@@ -13,7 +13,7 @@ separate file.
 	
 Index contents of a go file
 
-	$ goindex complex.go
+	$ index complex.go
     complex.go 0 18 package testdata
     complex.go 18 31 import
     complex.go 31 54 // Decoupled comment

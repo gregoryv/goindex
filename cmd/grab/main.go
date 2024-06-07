@@ -15,9 +15,9 @@ import (
 func main() {
 	flag.Usage = func() {
 		w := os.Stderr
-		fmt.Fprintf(w, "Usage: %s\n", os.Args[0])
+		fmt.Fprintf(w, "Usage: %s [OPTIONS]\n", os.Args[0])
 		fmt.Fprint(w, `
-grab command reads input i the form
+grab command reads frm stdin in the form
 
 FILE1 FROM TO
 FILE1 FROM TO
@@ -26,15 +26,23 @@ FILE2 FROM TO
 and writes out the sections from those files to stdout.
 
 FROM and TO are the byte index in each file.
+
+Options
+
 `)
 		flag.PrintDefaults()
 	}
+
+	cut := flag.Bool("cut", false, "")
+	flag.BoolVar(cut, "c", *cut, "cut grabbed sections from source file")
+
 	flag.Parse()
 
 	log.SetFlags(0)
 
 	s := bufio.NewScanner(os.Stdin)
-	var g Grabber
+	g := Grabber{cut: *cut}
+
 	for s.Scan() {
 		line := s.Text()
 		f := strings.Fields(line)
@@ -46,15 +54,30 @@ FROM and TO are the byte index in each file.
 			log.Fatal(err)
 		}
 	}
+	if err := g.Flush(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 type Grabber struct {
 	filename string
 	src      []byte
+
+	cut      bool
+	modified []byte
+
+	lastTo int
 }
 
 func (g *Grabber) Grab(w io.Writer, filename, sfrom, sto string) error {
+	// Load src from new file
 	if g.filename != filename {
+
+		if g.filename != "" && g.cut {
+			if err := g.Flush(); err != nil {
+				return err
+			}
+		}
 		src, err := os.ReadFile(filename)
 		if err != nil {
 			return err
@@ -71,5 +94,26 @@ func (g *Grabber) Grab(w io.Writer, filename, sfrom, sto string) error {
 		return err
 	}
 	w.Write(g.src[from:to])
+	// save rest for later write
+	if g.cut {
+		g.modified = append(g.modified, g.src[g.lastTo:from]...)
+		g.lastTo = to
+	}
+	return nil
+}
+
+func (g *Grabber) Flush() error {
+	if !g.cut || g.filename == "" {
+		return nil
+	}
+	// add tail data
+	g.modified = append(g.modified, g.src[g.lastTo:]...)
+	fi, _ := os.Stat(g.filename)
+	if err := os.WriteFile(g.filename, g.modified, fi.Mode()); err != nil {
+		return err
+	}
+	// reset
+	g.modified = g.modified[0:0]
+	g.lastTo = 0
 	return nil
 }

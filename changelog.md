@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on http://keepachangelog.com/en/1.0.0/
 and this project adheres to http://semver.org/spec/v2.0.0.html.
 
+## [0.6.0] - 2024-06-07
+
+- Add flag --cut to cmd/grab
+
 ## [0.5.0] - 2023-12-22
 
 - Fix incorrect index of func types
